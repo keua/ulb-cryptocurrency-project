@@ -10,7 +10,7 @@ when you have created the account and installed git in your computer.
 You can download the project in this page if your an expert you can clone from the terminal:
 > https://github.com/keua/ulb-cryptocurrency-project
 
-![alt text](images/download-project.png "download project")
+![alt text](images/download-project.jpg "download project")
 
 `you have to decompress the file you have downloaded.`
 
@@ -22,11 +22,11 @@ To open the project you need to install Netbeans 8.2, [download here](https://ne
 
 Open the program and then chose the open project option:
 
-![alt text](images/open-project.png "open project")
+![alt text](images/open-project.jpg "open project")
 
 Go wherever you have decompress the project, you should see something like this:
 
-![alt text](images/project-aspect.png "project aspect")
+![alt text](images/project-aspect.jpg "project aspect")
 
 `You can learn how Netbeans work`  [here](https://netbeans.org/kb/docs/java/quickstart.html)
 
@@ -49,11 +49,11 @@ To add libraries or plugins we will use the MAVEN repository, you can learn more
 
 To add a plugion or library, you have to find it in the MAVEN respository [here](https://mvnrepository.com/)
 
-![alt text](images/plugin-code.png "library")
+![alt text](images/plugin-code.jpg "library")
 
 That code should be added to the POM.xml file
 
-![alt text](images/pom.png "POM")
+![alt text](images/pom.jpg "POM")
 
 ## Save changes in the git repository
 
