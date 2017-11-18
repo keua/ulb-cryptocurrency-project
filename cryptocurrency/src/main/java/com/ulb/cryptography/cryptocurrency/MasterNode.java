@@ -13,6 +13,10 @@ public class MasterNode {
 
     private Blockchain blockChain;
     private Block block;
+    final private Wallet wallet // special account
+            = new Wallet(
+                    "ADDMASTERNODE", "KEYMASTERNODE", "PASSMASTERNODE", blockChain
+            );
 
     /**
      *
@@ -27,8 +31,17 @@ public class MasterNode {
     /**
      *
      */
-    public void addBlockToChain() {
+    MasterNode() {
+        this.blockChain = new Blockchain();
+        this.block = new Block();
+    }
 
+    /**
+     *
+     * @param block
+     */
+    public void addBlockToChain(Block block) {
+        this.blockChain.addToBlockchain(block);
     }
 
     /**
@@ -65,4 +78,12 @@ public class MasterNode {
     public void setBlock(Block block) {
         this.block = block;
     }
+
+    /**
+     * @return the wallet
+     */
+    public Wallet getWallet() {
+        return wallet;
+    }
+
 }

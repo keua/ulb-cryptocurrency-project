@@ -5,6 +5,7 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -25,10 +26,17 @@ public class Blockchain {
 
     /**
      *
+     */
+    public Blockchain() {
+        this.listOfBlocks = new LinkedList<>();
+    }
+
+    /**
+     *
      * @param block
      */
     public void addToBlockchain(Block block) {
-
+        this.listOfBlocks.add(block);
     }
 
     /**

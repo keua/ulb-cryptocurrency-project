@@ -5,6 +5,7 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -15,18 +16,37 @@ public class RelayNode {
 
     private String strAddress;
     private Blockchain blockChain;
-    private List<Object> blocksOfTransactions;
+    private Block minedBlock;
+    private List<Transaction> transactionList;
 
     /**
      *
      * @param strAddress
      * @param blockChain
-     * @param blocksOfTransactions
      */
-    public RelayNode(String strAddress, Blockchain blockChain, List<Object> blocksOfTransactions) {
+    public RelayNode(String strAddress, Blockchain blockChain) {
         this.strAddress = strAddress;
         this.blockChain = blockChain;
-        this.blocksOfTransactions = blocksOfTransactions;
+        this.transactionList = new LinkedList<>();
+    }
+
+    /**
+     *
+     * @param strAddress
+     */
+    public RelayNode(String strAddress) {
+        this.strAddress = strAddress;
+        this.blockChain = new Blockchain();
+        this.transactionList = new LinkedList<>();
+    }
+
+    /**
+     *
+     */
+    public RelayNode() {
+        this.strAddress = new String();
+        this.blockChain = new Blockchain();
+        this.transactionList = new LinkedList<>();
     }
 
     /**
@@ -114,16 +134,30 @@ public class RelayNode {
     }
 
     /**
-     * @return the blocksOfTransactions
+     * @return the minedBlock
      */
-    public List<Object> getBlocksOfTransactions() {
-        return blocksOfTransactions;
+    public Block getMinedBlock() {
+        return minedBlock;
     }
 
     /**
-     * @param blocksOfTransactions the blocksOfTransactions to set
+     * @param minedBlock the minedBlock to set
      */
-    public void setBlocksOfTransactions(List<Object> blocksOfTransactions) {
-        this.blocksOfTransactions = blocksOfTransactions;
+    public void setMinedBlock(Block minedBlock) {
+        this.minedBlock = minedBlock;
+    }
+
+    /**
+     * @return the transactionList
+     */
+    public List<Transaction> getTransactionList() {
+        return transactionList;
+    }
+
+    /**
+     * @param transactionList the transactionList to set
+     */
+    public void setTransactionList(List<Transaction> transactionList) {
+        this.transactionList = transactionList;
     }
 }

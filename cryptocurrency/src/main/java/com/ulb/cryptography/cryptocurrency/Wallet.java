@@ -33,15 +33,34 @@ public class Wallet {
     /**
      *
      */
+    Wallet() {
+        this.strAddress = new String();
+        this.strPrivateKey = new String();
+        this.strPassword = new String();
+        this.blockchain = new Blockchain();
+    }
+
+    Wallet(String strAddress, String strPrivateKey, String strPassword) {
+        this.strAddress = strAddress;
+        this.strPrivateKey = strPrivateKey;
+        this.strPassword = strPassword;
+        this.blockchain = new Blockchain();
+    }
+
+    /**
+     *
+     */
     public void addBlockToWallet() {
 
     }
 
     /**
      *
+     * @param transaction
+     * @param relayNode
      */
-    public void sendTransactionToRelayNode() {
-
+    public void sendTransactionToRelayNode(Transaction transaction, RelayNode relayNode) {
+        relayNode.getTransactionList().add(transaction);
     }
 
     /**

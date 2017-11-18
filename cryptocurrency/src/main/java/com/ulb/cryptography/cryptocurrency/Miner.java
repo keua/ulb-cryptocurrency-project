@@ -12,16 +12,48 @@ package com.ulb.cryptography.cryptocurrency;
 public class Miner {
 
     private Blockchain blockchain;
-    private Object BlockOfTransaction;
+    private Block BlockOfTransaction;
+    private Wallet wallet;
 
     /**
      *
      * @param blockchain
      * @param BlockOfTransaction
      */
-    public Miner(Blockchain blockchain, Object BlockOfTransaction) {
+    public Miner(Blockchain blockchain, Block BlockOfTransaction) {
         this.blockchain = blockchain;
         this.BlockOfTransaction = BlockOfTransaction;
+        this.wallet = new Wallet();
+    }
+
+    /**
+     *
+     */
+    public Miner() {
+        this.blockchain = new Blockchain();
+        this.BlockOfTransaction = new Block();
+        this.wallet = new Wallet();
+    }
+
+    /**
+     *
+     */
+    public void reqestTransactionListToTheRealy() {
+
+    }
+
+    /**
+     * @return the wallet
+     */
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    /**
+     * @param wallet the wallet to set
+     */
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
     }
 
     /**
@@ -55,7 +87,7 @@ public class Miner {
     /**
      * @param BlockOfTransaction the BlockOfTransaction to set
      */
-    public void setBlockOfTransaction(Object BlockOfTransaction) {
+    public void setBlockOfTransaction(Block BlockOfTransaction) {
         this.BlockOfTransaction = BlockOfTransaction;
     }
 }

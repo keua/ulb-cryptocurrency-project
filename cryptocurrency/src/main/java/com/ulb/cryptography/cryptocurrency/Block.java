@@ -5,6 +5,7 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -27,6 +28,23 @@ public class Block {
         this.listOfTransactions = listOfTransactions;
         this.strNonce = strNonce;
         this.strHash = strHash;
+    }
+
+    /**
+     *
+     * @param strNonce
+     * @param strHash
+     */
+    public Block(String strNonce, String strHash) {
+        this.listOfTransactions = new LinkedList<>();
+        this.strNonce = strNonce;
+        this.strHash = strHash;
+    }
+
+    public Block() {
+        this.listOfTransactions = new LinkedList<>();
+        this.strNonce = new String();
+        this.strHash = new String();
     }
 
     /**
