@@ -5,46 +5,37 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  *
  * @author masterulb
  */
 public class Wallet {
 
-    private String strAddress;
-    private String strPrivateKey;
-    private String strPassword;
     private Blockchain blockchain;
+    private List<Account> accounts;
 
     /**
      *
-     * @param strAddress
-     * @param strPrivateKey
-     * @param strPassword
      * @param blockchain
+     * @param accounts
      */
-    public Wallet(String strAddress, String strPrivateKey, String strPassword, Blockchain blockchain) {
-        this.strAddress = strAddress;
-        this.strPrivateKey = strPrivateKey;
-        this.strPassword = strPassword;
+    public Wallet(Blockchain blockchain, List<Account> accounts) {
         this.blockchain = blockchain;
+        this.accounts = accounts;
     }
 
     /**
      *
      */
-    Wallet() {
-        this.strAddress = new String();
-        this.strPrivateKey = new String();
-        this.strPassword = new String();
+    public Wallet() {
         this.blockchain = new Blockchain();
-    }
-
-    Wallet(String strAddress, String strPrivateKey, String strPassword) {
-        this.strAddress = strAddress;
-        this.strPrivateKey = strPrivateKey;
-        this.strPassword = strPassword;
-        this.blockchain = new Blockchain();
+        this.accounts = new LinkedList<>();
     }
 
     /**
@@ -67,7 +58,7 @@ public class Wallet {
      *
      */
     public void createAddress() {
-
+        
     }
 
     /**
@@ -75,48 +66,6 @@ public class Wallet {
      */
     public void authentificateUser() {
 
-    }
-
-    /**
-     * @return the strAddress
-     */
-    public String getStrAddress() {
-        return strAddress;
-    }
-
-    /**
-     * @param strAddress the strAddress to set
-     */
-    public void setStrAddress(String strAddress) {
-        this.strAddress = strAddress;
-    }
-
-    /**
-     * @return the strPrivateKey
-     */
-    public String getStrPrivateKey() {
-        return strPrivateKey;
-    }
-
-    /**
-     * @param strPrivateKey the strPrivateKey to set
-     */
-    public void setStrPrivateKey(String strPrivateKey) {
-        this.strPrivateKey = strPrivateKey;
-    }
-
-    /**
-     * @return the strPassword
-     */
-    public String getStrPassword() {
-        return strPassword;
-    }
-
-    /**
-     * @param strPassword the strPassword to set
-     */
-    public void setStrPassword(String strPassword) {
-        this.strPassword = strPassword;
     }
 
     /**
@@ -131,5 +80,24 @@ public class Wallet {
      */
     public void setBlockchain(Blockchain blockchain) {
         this.blockchain = blockchain;
+    }
+
+    /**
+     * @return the accounts
+     */
+    public List<Account> getAccounts() {
+        return accounts;
+    }
+
+    /**
+     * @param accounts the accounts to set
+     */
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
+    }
+
+    public void createAccount(String password) throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
+        Account account = new Account(password);
+        this.accounts.add(account);
     }
 }

@@ -5,6 +5,10 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+
 /**
  *
  * @author masterulb
@@ -20,19 +24,22 @@ public class Miner {
      * @param blockchain
      * @param BlockOfTransaction
      */
-    public Miner(Blockchain blockchain, Block BlockOfTransaction) {
+    public Miner(Blockchain blockchain, Block BlockOfTransaction) throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
         this.blockchain = blockchain;
         this.BlockOfTransaction = BlockOfTransaction;
         this.wallet = new Wallet();
+        this.wallet.createAccount("miner");
     }
 
     /**
      *
      */
-    public Miner() {
+    public Miner() throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
         this.blockchain = new Blockchain();
         this.BlockOfTransaction = new Block();
         this.wallet = new Wallet();
+        this.wallet = new Wallet();
+        this.wallet.createAccount("miner");
     }
 
     /**

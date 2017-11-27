@@ -6,7 +6,6 @@
 package com.ulb.cryptography.cryptocurrency;
 
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  *
@@ -17,7 +16,7 @@ public class RelayNode {
     private String strAddress;
     private Blockchain blockChain;
     private Block minedBlock;
-    private List<Transaction> transactionList;
+    private LinkedList<Transaction> transactionList;
 
     /**
      *
@@ -150,14 +149,14 @@ public class RelayNode {
     /**
      * @return the transactionList
      */
-    public List<Transaction> getTransactionList() {
+    public LinkedList<Transaction> getTransactionList() {
         return transactionList;
     }
 
     /**
      * @param transactionList the transactionList to set
      */
-    public void setTransactionList(List<Transaction> transactionList) {
+    public void setTransactionList(LinkedList<Transaction> transactionList) {
         this.transactionList = transactionList;
     }
 }

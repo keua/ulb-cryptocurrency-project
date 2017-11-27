@@ -5,6 +5,7 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author masterulb
  */
-public class Block {
+public class Block implements Serializable{
 
     private List<Transaction> listOfTransactions;
     private String strNonce;

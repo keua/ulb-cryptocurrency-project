@@ -5,18 +5,39 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.util.Date;
 
 /**
  *
  * @author masterulb
  */
-public class Transaction {
+public class Transaction implements Serializable {
+
+    /**
+     * @return the transactionSigned
+     */
+    public byte[] getTransactionSigned() {
+        return transactionSigned;
+    }
+
+    /**
+     * @param transactionSigned the transactionSigned to set
+     */
+    public void setTransactionSigned(byte[] transactionSigned) {
+        this.transactionSigned = transactionSigned;
+    }
 
     private Integer intAmount;
-    private String strAddress;
+    private String strSenderAddress;
     private String strReceiver;
     private Date timeStamp;
+    private byte[] transactionSigned;
 
     /**
      *
@@ -27,7 +48,7 @@ public class Transaction {
      */
     public Transaction(Integer intAmount, String strAddress, String strReceiver, Date timeStamp) {
         this.intAmount = intAmount;
-        this.strAddress = strAddress;
+        this.strSenderAddress = strAddress;
         this.strReceiver = strReceiver;
         this.timeStamp = timeStamp;
     }
@@ -37,7 +58,7 @@ public class Transaction {
      */
     public Transaction() {
         this.intAmount = null;
-        this.strAddress = new String();
+        this.strSenderAddress = new String();
         this.strReceiver = new String();
         this.timeStamp = new Date();
     }
@@ -52,8 +73,13 @@ public class Transaction {
     /**
      *
      */
-    public void signTransaction() {
-
+    public void signTransaction(PrivateKey privateKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+        String concatenatedValues
+                = this.timeStamp.toString()
+                + this.intAmount
+                + this.strReceiver
+                + this.strSenderAddress;
+       this.transactionSigned = Cryptography.DSASign(privateKey, concatenatedValues);
     }
 
     /**
@@ -71,17 +97,17 @@ public class Transaction {
     }
 
     /**
-     * @return the strAddress
+     * @return the strSenderAddress
      */
-    public String getStrAddress() {
-        return strAddress;
+    public String getStrSenderAddress() {
+        return strSenderAddress;
     }
 
     /**
-     * @param strAddress the strAddress to set
+     * @param strSenderAddress the strSenderAddress to set
      */
-    public void setStrAddress(String strAddress) {
-        this.strAddress = strAddress;
+    public void setStrSenderAddress(String strSenderAddress) {
+        this.strSenderAddress = strSenderAddress;
     }
 
     /**

@@ -5,26 +5,66 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Date;
-import java.util.LinkedList;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  *
  * @author masterulb
  */
 public class ExecutionProcess {
-    
+
     private static final PrintStream OUT = System.out;
     private static String outResult = "";
 
     /**
      * @param args the command line arguments
+     * @throws java.security.GeneralSecurityException
+     * @throws java.security.NoSuchAlgorithmException
+     * @throws java.io.IOException
      */
-    public static void main(String[] args) {
-        // creating part
-        LinkedList<Transaction> transactions = new LinkedList<>();
-        for (int i = 0; i < 3; i++) {
+    public static void main(String[] args) throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
+
+        // Creating the Blockchain
+        Blockchain blockchain = new Blockchain();
+
+        // Creating the master node
+        MasterNode masterNode = new MasterNode();
+        masterNode.setBlockChain(blockchain);// ASIGN THE BLOCKCHAIN OT THE MASTERNODE
+
+        // Creating 2 realy nodes
+        RelayNode relayNode1 = new RelayNode("localhost:3000");
+        RelayNode relayNode2 = new RelayNode("localhost:3001");
+
+        // Creating 3 Wallets
+        Wallet wallet1 = new Wallet();
+        Wallet wallet2 = new Wallet();
+        Wallet wallet3 = new Wallet();
+
+        // Creating 2 Miners
+        Miner miner1 = new Miner();
+        Miner miner2 = new Miner();
+
+        // Firt scenario : creating and account inside a wallet
+        // require the password
+        wallet1.createAccount("password");
+        wallet1.getAccounts().get(0).getPrivateKey();
+
+        String eprk = wallet1.getAccounts().get(0).getEncryptedPrivateKey();
+        String pbk = Cryptography.savePublicKey(wallet1.getAccounts().get(0).getPubliKey());
+        String addr = wallet1.getAccounts().get(0).getStrAddress();
+        String prk = Cryptography.savePrivateKey(wallet1.getAccounts().get(0).getPrivateKey());
+        String out = String.format("eprk: %s \n pbk: %s \n address: %s \n prk: %s", eprk, pbk, addr, prk);
+
+        OUT.println(out);
+
+        /*
+        //1) INITIALISATION
+        // Mater Node
+        LinkedList<Transaction> transactions = new LinkedList<>();// we are inicializating the Transactions list.
+        for (int i = 0; i < 3; i++) { // we are filling the transactions list.
             Transaction transaction
                     = new Transaction(
                             15, "192.0.1." + i, "192.0.2." + i, new Date()
@@ -44,7 +84,7 @@ public class ExecutionProcess {
                         insertedBlock.getStrNonce()
                 );
         OUT.println(outResult);
-        
+
         for (Transaction transaction : insertedBlock.getListOfTransactions()) {
             outResult
                     = String.format(
@@ -55,27 +95,11 @@ public class ExecutionProcess {
                     );
             OUT.println(outResult);
         }
-        
+        // Miner
         Wallet wallet = new Wallet("ADD001", "KEY0001", "PASSS001");// miner address
         Miner miner = new Miner();
         miner.setWallet(wallet);
-        
-        Transaction masternodePayTransaction
-                = new Transaction(100, "ADDMASTERNODE", "ADD001", new Date());
-        RelayNode relayNode = new RelayNode("192.168.4.1");
-
-        // sending the transaction to the realy node
-        masterNode
-                .getWallet()
-                .sendTransactionToRelayNode(masternodePayTransaction, relayNode);
-        
-        outResult
-                = String.format(
-                        "Transaction Amount: %s",
-                        relayNode.getTransactionList().get(0).getIntAmount()
-                );
-        OUT.println(outResult);
-        
+         */
     }
-    
+
 }
