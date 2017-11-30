@@ -16,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 public class Miner {
 
     private Blockchain blockchain;
-    private Block BlockOfTransaction;
+    private Block blockOfTransaction;
     private Wallet wallet;
 
     /**
@@ -26,7 +26,7 @@ public class Miner {
      */
     public Miner(Blockchain blockchain, Block BlockOfTransaction) throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
         this.blockchain = blockchain;
-        this.BlockOfTransaction = BlockOfTransaction;
+        this.blockOfTransaction = BlockOfTransaction;
         this.wallet = new Wallet();
         this.wallet.createAccount("miner");
     }
@@ -36,7 +36,7 @@ public class Miner {
      */
     public Miner() throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
         this.blockchain = new Blockchain();
-        this.BlockOfTransaction = new Block();
+        this.blockOfTransaction = new Block();
         this.wallet = new Wallet();
         this.wallet = new Wallet();
         this.wallet.createAccount("miner");
@@ -85,16 +85,16 @@ public class Miner {
     }
 
     /**
-     * @return the BlockOfTransaction
+     * @return the blockOfTransaction
      */
     public Object getBlockOfTransaction() {
-        return BlockOfTransaction;
+        return blockOfTransaction;
     }
 
     /**
-     * @param BlockOfTransaction the BlockOfTransaction to set
+     * @param BlockOfTransaction the blockOfTransaction to set
      */
     public void setBlockOfTransaction(Block BlockOfTransaction) {
-        this.BlockOfTransaction = BlockOfTransaction;
+        this.blockOfTransaction = BlockOfTransaction;
     }
 }

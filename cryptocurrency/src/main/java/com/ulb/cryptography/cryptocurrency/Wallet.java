@@ -58,7 +58,7 @@ public class Wallet {
      *
      */
     public void createAddress() {
-        
+
     }
 
     /**
@@ -96,8 +96,9 @@ public class Wallet {
         this.accounts = accounts;
     }
 
-    public void createAccount(String password) throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
+    public String createAccount(String password) throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
         Account account = new Account(password);
         this.accounts.add(account);
+        return account.getStrAddress();
     }
 }

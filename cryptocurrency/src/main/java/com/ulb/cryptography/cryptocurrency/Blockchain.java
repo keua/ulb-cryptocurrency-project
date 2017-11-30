@@ -5,6 +5,7 @@
  */
 package com.ulb.cryptography.cryptocurrency;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,8 +13,9 @@ import java.util.List;
  *
  * @author masterulb
  */
-public class Blockchain {
-
+public class Blockchain implements Serializable{
+    
+    private static final long serialVersionUID = 12358903454875L;
     private List<Block> listOfBlocks;
 
     /**

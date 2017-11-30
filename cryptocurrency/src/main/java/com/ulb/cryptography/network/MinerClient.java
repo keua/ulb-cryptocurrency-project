@@ -6,12 +6,10 @@
 package com.ulb.cryptography.network;
 
 import com.ulb.cryptography.cryptocurrency.Block;
+import com.ulb.cryptography.cryptocurrency.Blockchain;
 import com.ulb.cryptography.cryptocurrency.Miner;
-import com.ulb.cryptography.cryptocurrency.RelayNode;
 import com.ulb.cryptography.cryptocurrency.Transaction;
-import com.ulb.cryptography.cryptocurrency.Wallet;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
@@ -20,9 +18,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  *
@@ -37,7 +33,7 @@ public class MinerClient implements Runnable {
     //private static DataInputStream is = null;
     private static BufferedReader inputLine = null;
     private static boolean closed = false;
-    public static Miner MINER;
+    static Miner MINER;
     private static ObjectInputStream ois = null;
 
     public static void main(String[] args) throws GeneralSecurityException, NoSuchAlgorithmException, IOException, ClassNotFoundException {
@@ -55,7 +51,7 @@ public class MinerClient implements Runnable {
             );
         } else {
             host = args[0];
-            portNumber = Integer.valueOf(args[1]).intValue();
+            portNumber = Integer.parseInt(args[1]);
         }
 
         /*
@@ -86,7 +82,6 @@ public class MinerClient implements Runnable {
          */
         if (clientSocket != null && os != null && ois != null) {
             try {
-
                 /* Create a thread to read from the server. */
                 new Thread(new MinerClient()).start();
                 while (!closed) {
@@ -94,16 +89,20 @@ public class MinerClient implements Runnable {
                     if ("1".equals(inputLine.readLine())) {
                         RequestForTransactions rft = new RequestForTransactions();
                         rft.setAddress(MINER.getWallet().getAccounts().get(0).getStrAddress());
-                        os.writeObject(rft);
-                        Object o = ois.readObject();
-                        LinkedList<Transaction> rn = (LinkedList<Transaction>)o;
+                        os.writeObject(new Message(rft));
+
+                        Message messageFromClient = (Message) ois.readObject();
+                        Object objectInMessage = messageFromClient.getObject();
+                        LinkedList<Transaction> rn = (LinkedList<Transaction>) objectInMessage;
                         System.out.println(rn.get(0).getIntAmount());
                         //if (LinkedList.class.isInstance(o)) {
-                            //LinkedList<Transaction> transactions = (LinkedList<Transaction>) o;
-                            //System.out.println(transactions.get(0).getIntAmount());
+                        //LinkedList<Transaction> transactions = (LinkedList<Transaction>) o;
+                        //System.out.println(transactions.get(0).getIntAmount());
                         //}
                         Block b = new Block(rn, "hash", "nonce");
-                        os.writeObject(b);
+                        System.out.println("sending message to the relay");
+                        os.writeObject(new Message(b));
+                        System.out.println("the message has been sent");
                     }
                 }
                 /*
@@ -130,7 +129,7 @@ public class MinerClient implements Runnable {
          * Keep on reading from the socket till we receive "Bye" from the
          * server. Once we received that then we want to break.
          */
-        /*String responseLine;
+ /*String responseLine;
         try {
             while ((responseLine = is.readLine()) != null) {
                 System.out.println(responseLine);

@@ -27,6 +27,7 @@ public class RelayNode {
         this.strAddress = strAddress;
         this.blockChain = blockChain;
         this.transactionList = new LinkedList<>();
+        this.minedBlock = null;
     }
 
     /**
@@ -37,15 +38,17 @@ public class RelayNode {
         this.strAddress = strAddress;
         this.blockChain = new Blockchain();
         this.transactionList = new LinkedList<>();
+        this.minedBlock = null;
     }
 
     /**
      *
      */
     public RelayNode() {
-        this.strAddress = new String();
+        this.strAddress = null;
         this.blockChain = new Blockchain();
         this.transactionList = new LinkedList<>();
+        this.minedBlock = null;
     }
 
     /**

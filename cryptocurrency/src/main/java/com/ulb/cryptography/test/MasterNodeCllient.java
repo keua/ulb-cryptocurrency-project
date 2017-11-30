@@ -3,15 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.ulb.cryptography.network;
+package com.ulb.cryptography.test;
 
 import com.ulb.cryptography.cryptocurrency.Block;
 import com.ulb.cryptography.cryptocurrency.MasterNode;
-import com.ulb.cryptography.cryptocurrency.Miner;
-import com.ulb.cryptography.cryptocurrency.Transaction;
-import com.ulb.cryptography.cryptocurrency.Wallet;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
@@ -20,8 +16,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.LinkedList;
 
 /**
  *
@@ -54,7 +48,7 @@ public class MasterNodeCllient implements Runnable{
             );
         } else {
             host = args[0];
-            portNumber = Integer.valueOf(args[1]).intValue();
+            portNumber = Integer.parseInt(args[1]);
         }
 
         /*

@@ -14,6 +14,8 @@ import java.util.List;
  * @author masterulb
  */
 public class Block implements Serializable{
+    
+    private static final long serialVersionUID = 12358903454875L;
 
     private List<Transaction> listOfTransactions;
     private String strNonce;
@@ -44,8 +46,8 @@ public class Block implements Serializable{
 
     public Block() {
         this.listOfTransactions = new LinkedList<>();
-        this.strNonce = new String();
-        this.strHash = new String();
+        this.strNonce = null;
+        this.strHash = null;
     }
 
     /**

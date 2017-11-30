@@ -1,6 +1,7 @@
 
-package com.ulb.cryptography.network;
-import java.io.Console;
+package com.ulb.cryptography.test;
+
+import com.ulb.cryptography.test.ClaseMenu;
 
 /**
  *

@@ -32,9 +32,6 @@ public class Account {
     public Account(String password) throws NoSuchAlgorithmException, GeneralSecurityException, IOException {
         KeyPair keyPair = Cryptography.genKeys();
         PrivateKey privateKey = keyPair.getPrivate();
-        System.out.println("this is the original one");
-        System.out.println(savePrivateKey(privateKey));
-        System.out.println("this is the original one");
         this.publiKey = keyPair.getPublic();
         String sha256hex = DigestUtils.sha256Hex(savePublicKey(this.publiKey));
         this.strAddress = Ripemd160(sha256hex);

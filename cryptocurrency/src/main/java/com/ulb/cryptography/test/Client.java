@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.ulb.cryptography.network;
+package com.ulb.cryptography.test;
 
 /**
  *

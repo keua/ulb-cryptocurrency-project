@@ -19,19 +19,7 @@ import java.util.Date;
  */
 public class Transaction implements Serializable {
 
-    /**
-     * @return the transactionSigned
-     */
-    public byte[] getTransactionSigned() {
-        return transactionSigned;
-    }
-
-    /**
-     * @param transactionSigned the transactionSigned to set
-     */
-    public void setTransactionSigned(byte[] transactionSigned) {
-        this.transactionSigned = transactionSigned;
-    }
+    private static final long serialVersionUID = 12358903454875L;
 
     private Integer intAmount;
     private String strSenderAddress;
@@ -58,9 +46,23 @@ public class Transaction implements Serializable {
      */
     public Transaction() {
         this.intAmount = null;
-        this.strSenderAddress = new String();
-        this.strReceiver = new String();
+        this.strSenderAddress = null;
+        this.strReceiver = null;
         this.timeStamp = new Date();
+    }
+
+    /**
+     * @return the transactionSigned
+     */
+    public byte[] getTransactionSigned() {
+        return transactionSigned;
+    }
+
+    /**
+     * @param transactionSigned the transactionSigned to set
+     */
+    public void setTransactionSigned(byte[] transactionSigned) {
+        this.transactionSigned = transactionSigned;
     }
 
     /**
@@ -79,7 +81,7 @@ public class Transaction implements Serializable {
                 + this.intAmount
                 + this.strReceiver
                 + this.strSenderAddress;
-       this.transactionSigned = Cryptography.DSASign(privateKey, concatenatedValues);
+        this.transactionSigned = Cryptography.DSASign(privateKey, concatenatedValues);
     }
 
     /**

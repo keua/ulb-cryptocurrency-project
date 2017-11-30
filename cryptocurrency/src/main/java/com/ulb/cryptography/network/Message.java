@@ -11,23 +11,29 @@ import java.io.Serializable;
  *
  * @author masterulb
  */
-public class RequestForTransactions implements Serializable {
+public class Message implements Serializable {
 
     private static final long serialVersionUID = 12358903454875L;
+    private Object object;
 
-    private String address;
+    public Message() {
+    }
 
-    /**
-     * @return the address
-     */
-    public String getAddress() {
-        return address;
+    public Message(Object object) {
+        this.object = object;
     }
 
     /**
-     * @param address the address to set
+     * @return the object
      */
-    public void setAddress(String address) {
-        this.address = address;
+    public Object getObject() {
+        return object;
+    }
+
+    /**
+     * @param object the object to set
+     */
+    public void setObject(Object object) {
+        this.object = object;
     }
 }
