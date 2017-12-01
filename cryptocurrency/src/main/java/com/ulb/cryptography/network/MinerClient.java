@@ -20,6 +20,8 @@ import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -27,11 +29,9 @@ import java.util.LinkedList;
  */
 public class MinerClient implements Runnable {
 
+    private static final Logger LOGGER = Logger.getLogger(MinerClient.class.getName());
     private static Socket clientSocket = null;
-    // The output stream
-    private static ObjectOutputStream os = null;
-    // The input stream
-    //private static DataInputStream is = null;
+    private static ObjectOutputStream oos = null;
     private static BufferedReader inputLine = null;
     private static boolean closed = false;
     static Miner MINER;
@@ -41,14 +41,14 @@ public class MinerClient implements Runnable {
 
         MINER = new Miner();
 
-        // The default port.
         int portNumber = 2222;
-        // The default host.
         String host = "localhost";
 
         if (args.length < 2) {
-            System.out.println(
-                    "Now using host=" + host + ", portNumber=" + portNumber
+            LOGGER.log(
+                    Level.SEVERE,
+                    "Now using host={0}, portNumber={1}",
+                    new Object[]{host, portNumber}
             );
         } else {
             host = args[0];
@@ -62,17 +62,18 @@ public class MinerClient implements Runnable {
 
             clientSocket = new Socket(host, portNumber);
             inputLine = new BufferedReader(new InputStreamReader(System.in));
-            os = new ObjectOutputStream(clientSocket.getOutputStream());
+            oos = new ObjectOutputStream(clientSocket.getOutputStream());
             ois = new ObjectInputStream(clientSocket.getInputStream());
 
         } catch (UnknownHostException e) {
 
-            System.err.println("Don't know about host " + host);
+            LOGGER.log(Level.SEVERE, "Don''t know about host {0}", host);
 
         } catch (IOException e) {
-            System.err.println(
-                    "Couldn't get I/O for the connection to the host "
-                    + host
+            LOGGER.log(
+                    Level.SEVERE,
+                    "Couldn''t get I/O for the connection to the host {0}",
+                    host
             );
         }
 
@@ -80,7 +81,7 @@ public class MinerClient implements Runnable {
          * If everything has been initialized then we want to write some data to the
          * socket we have opened a connection to on the port portNumber.
          */
-        if (clientSocket != null && os != null && ois != null) {
+        if (clientSocket != null && oos != null && ois != null) {
             try {
                 /* Create a thread to read from the server. */
                 new Thread(new MinerClient()).start();
@@ -90,44 +91,52 @@ public class MinerClient implements Runnable {
                     Object objectInMessage = messageFromClient.getObject();
 
                     if (Blockchain.class.isInstance(objectInMessage)) {
-                        System.out.println("getting the new blockchain");
+                        LOGGER.log(Level.INFO, "Getting the new blockchain");
                         Blockchain newBlockchain = (Blockchain) objectInMessage;
                         MINER.setBlockchain(newBlockchain);
-                        System.out.println(
-                                "blocs in the mew blockchain "
-                                + newBlockchain.getListOfBlocks().size()
+                        LOGGER.log(
+                                Level.INFO,
+                                "Blocks in the mew blockchain {0}",
+                                newBlockchain.getListOfBlocks().size()
                         );
                     }
 
-                    System.out.println("Here we have to send what ever we want");
                     if ("1".equals(inputLine.readLine())) {
 
-                        RequestForTransactions rft = new RequestForTransactions();
-                        rft.setAddress(MINER.getWallet().getAccounts().get(0).getStrAddress());
-                        os.writeObject(new Message(rft));
+                        LOGGER.log(Level.INFO, "Requesting transactions");
 
-                        //Message messageFromClient = (Message) ois.readObject();
-                        //Object objectInMessage = messageFromClient.getObject();
-                        LinkedList<Transaction> rn = (LinkedList<Transaction>) objectInMessage;
-                        System.out.println(rn.get(0).getFltInputSenderAmount());
-                        //if (LinkedList.class.isInstance(o)) {
-                        //LinkedList<Transaction> transactions = (LinkedList<Transaction>) o;
-                        //System.out.println(transactions.get(0).getIntAmount());
-                        //}
-                        Block b = new Block(rn, "hash", "nonce");
-                        System.out.println("sending message to the relay");
-                        os.writeObject(new Message(b));
-                        System.out.println("the message has been sent");
+                        RequestForTransactions rft = new RequestForTransactions();
+                        rft.setAddress(
+                                MINER
+                                        .getWallet()
+                                        .getAccounts()
+                                        .get(0)
+                                        .getStrAddress()
+                        );
+                        oos.writeObject(new Message(rft));
+
+                        messageFromClient = (Message) ois.readObject();
+                        objectInMessage = messageFromClient.getObject();
+
+                        // Process the transaction list (mining stuff here)
+                        LOGGER.log(Level.INFO, "Processing the transactions");
+                        LinkedList<Transaction> transactions
+                                = (LinkedList<Transaction>) objectInMessage;
+                        Block b = new Block(transactions, "hash", "nonce");
+                        // Process the transaction list (mining stuff here)
+
+                        LOGGER.log(Level.INFO, "Sending mined block to the relay");
+                        oos.writeObject(new Message(b));
                     }
                 }
                 /*
                  * Close the output stream, close the input stream, close the socket.
                  */
-                os.close();
+                oos.close();
                 ois.close();
                 clientSocket.close();
             } catch (IOException e) {
-                System.err.println("IOException:  " + e);
+                LOGGER.log(Level.SEVERE, "IOException:  {0}", e);
             }
         }
 
@@ -144,17 +153,5 @@ public class MinerClient implements Runnable {
          * Keep on reading from the socket till we receive "Bye" from the
          * server. Once we received that then we want to break.
          */
- /*String responseLine;
-        try {
-            while ((responseLine = is.readLine()) != null) {
-                System.out.println(responseLine);
-                if (responseLine.contains("*** Bye")) {
-                    break;
-                }
-            }
-            closed = true;
-        } catch (IOException e) {
-            System.err.println("IOException:  " + e);
-        }*/
     }
 }

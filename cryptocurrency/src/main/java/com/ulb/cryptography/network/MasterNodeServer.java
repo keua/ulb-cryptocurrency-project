@@ -10,14 +10,11 @@ import com.ulb.cryptography.cryptocurrency.Block;
 import com.ulb.cryptography.cryptocurrency.MasterNode;
 import com.ulb.cryptography.cryptocurrency.Transaction;
 import com.ulb.cryptography.cryptocurrency.Wallet;
-import static com.ulb.cryptography.network.WalletClient.WALLET;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.Date;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,11 +24,14 @@ import java.util.logging.Logger;
  */
 public class MasterNodeServer {
 
+    private static final Logger LOGGER
+            = Logger.getLogger(MasterNode.class.getName());
     private static boolean closed = false;
     private static ServerSocket serverSocket = null;
     private static Socket clientSocket = null;
     private static final int MAX_CLIENTS = 10;
-    private static final MasterClientThread[] CLIENT_THREADS = new MasterClientThread[MAX_CLIENTS];
+    private static final MasterClientThread[] CLIENT_THREADS
+            = new MasterClientThread[MAX_CLIENTS];
     static MasterNode MASTER_NODE;
     private static final int DEFAULT_PORT_NUMBER = 3333;
     static Wallet WALLET;
@@ -42,6 +42,7 @@ public class MasterNodeServer {
         WALLET = new Wallet();
 
         try {
+            // initialize blockchain (below)
             Account a = new Account("masternode");
             MASTER_NODE.setAccount(a);
             Transaction t
@@ -53,40 +54,40 @@ public class MasterNodeServer {
                             MASTER_NODE.getAccount().getStrAddress(),
                             new Date()
                     );
-            // ini blockchain
             Block b = new Block();
             b.createFirstBlock();
             b.getListOfTransactions().add(t);
             MASTER_NODE.addBlockToChain(b);
             int accountId = MASTER_NODE.getAccount().getAcountID();
-            System.out.println("Masternode account id: " + accountId);
-            System.out.println("address: " + a.getStrAddress());
+            LOGGER.log(Level.INFO, "Masternode account id: {0}", accountId);
+            LOGGER.log(Level.INFO, "address: {0}", a.getStrAddress());
             WALLET.getAccounts().add(a);
+            // initialize blockcahin (above)
 
         } catch (GeneralSecurityException | IOException ex) {
-            Logger.getLogger(MasterNode.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         }
 
         //
         int portNumber = DEFAULT_PORT_NUMBER;
 
         if (args.length < 1) {
-            System.out.println("Now using port number=" + portNumber);
+            LOGGER.log(Level.INFO, "Now using port number={0}", portNumber);
         } else {
             portNumber = Integer.parseInt(args[0]);
         }
 
         /*
-         * Open a server socket on the portNumber (default 2222). Note that we can
-         * not choose a port less than 1023 if we are not privileged users (root).
+         * Open a server socket on the portNumber (default 2222).
+         * Note that we can not choose a port less than 1023 if we are not
+         * privileged users (root).
          */
         try {
             serverSocket = new ServerSocket(portNumber);
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.log(Level.SEVERE, "IO exception creating the socket", e);
         }
 
-        // here create the client part
         /*
          * Create a client socket for each connection and pass it to a new client
          * thread.
@@ -110,7 +111,7 @@ public class MasterNodeServer {
                 }
 
             } catch (IOException e) {
-                System.out.println(e);
+                LOGGER.log(Level.SEVERE, "Io exception ", e);
             }
         }
     }

@@ -7,14 +7,11 @@ package com.ulb.cryptography.network;
 
 import com.ulb.cryptography.cryptocurrency.Block;
 import com.ulb.cryptography.cryptocurrency.Blockchain;
-import com.ulb.cryptography.cryptocurrency.Transaction;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintStream;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +27,6 @@ public class MasterClientThread extends Thread {
     private final int maxClientsCount;
     private ObjectOutputStream oos = null;
     private ObjectInputStream ois = null;
-    //private PrintStream os = null;
 
     public MasterClientThread(Socket clientSocket, MasterClientThread[] threads) {
         this.clientSocket = clientSocket;
@@ -46,74 +42,82 @@ public class MasterClientThread extends Thread {
 
                 ois = new ObjectInputStream(clientSocket.getInputStream());
                 oos = new ObjectOutputStream(clientSocket.getOutputStream());
-                //os = new PrintStream(clientSocket.getOutputStream());
-                LOGGER.log(Level.INFO, "Client starts connection");
+                LOGGER.log(Level.INFO, "New client starts a connection");
 
                 //send the las blockchain
+                LOGGER.log(
+                        Level.INFO,
+                        "Sending the current blockchain to the new client"
+                );
                 oos.writeObject(
                         new Message(MasterNodeServer.MASTER_NODE.getBlockChain())
                 );
 
-                int i = 0;
+                oos.reset();// the most important line in the project
+
                 while (true) {
-                    //String line = ois.readLine();
-                    //if (line.startsWith("/quit")) {
-                    //    break;
-                    //}
-                    System.out.println("Here im receving the data");
                     Message messageFromClient = (Message) ois.readObject();
                     Object objectInMessage = messageFromClient.getObject();
 
                     if (Block.class.isInstance(objectInMessage)) {
+                        LOGGER.log(
+                                Level.INFO,
+                                "Receiving a new mined Block from some relay"
+                        );
+                        // Verify if the block is valid (Below)
                         Block block = (Block) objectInMessage;
                         MasterNodeServer.MASTER_NODE.addBlockToChain(block);
-                        System.out.println(
-                                "block added to the blockchain, "
-                                + "blocks in the blockchain: "
-                                + MasterNodeServer.MASTER_NODE.getBlockChain().getListOfBlocks().size()
+                        LOGGER.log(
+                                Level.INFO,
+                                "New Block added to the blockchain,"
+                                + " blocks in the blockchain: {0}",
+                                MasterNodeServer.MASTER_NODE
+                                        .getBlockChain()
+                                        .getListOfBlocks()
+                                        .size()
                         );
-
+                        // Verify if the block is valid (Above)
+                        for (MasterClientThread thread : threads) {
+                            if (thread != null) {
+                                LOGGER.log(
+                                        Level.INFO,
+                                        "Sending the updated blockchain to the relays"
+                                );
+                                thread.oos.writeObject(
+                                        new Message(
+                                                MasterNodeServer.MASTER_NODE
+                                                        .getBlockChain()
+                                        )
+                                );
+                                thread.oos.reset();// the most important line in the project
+                            }
+                        }
+                        /*LOGGER.log(
+                                Level.INFO,
+                                "Sending the updated blockchain to the relays"
+                        );
                         oos.writeObject(
                                 new Message(
-                                        MasterNodeServer.MASTER_NODE.getBlockChain()
+                                        MasterNodeServer.MASTER_NODE
+                                                .getBlockChain()
                                 )
                         );
-                        oos.reset();
+                        oos.reset();*/
                     }
-
-                    if (Blockchain.class.isInstance(objectInMessage)) {
-
-                    }
-
-                    /*for (MasterClientThread thread : threads) {
-                        if (thread != null) {
-                            System.out.println(
-                                    "sending new blockchain with, "
-                                    + MasterNodeServer.MASTER_NODE
-                                            .getBlockChain()
-                                            .getListOfBlocks().size()
-                                    + " blocks");
-                            thread.oos.writeObject(MasterNodeServer.MASTER_NODE.getBlockChain());
-                        }
-                    }*/
-                    //oos.writeObject(o);
-                    i++;
+                    // If we want to send the new blockchain only to the relay
+                    // who has sent the block, we have to use the code above.
                 }
             } catch (ClassNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, "Class not found Exception", ex);
             } catch (EOFException ex) {
-                LOGGER.log(Level.INFO, "Client finishes connection");
+                LOGGER.log(Level.INFO, "Client finishes connection", ex);
             }
-            /*
-            * Close the output stream, close the input stream, close the socket.
-             */
-            //os.println("*** Bye  ***");
             ois.close();
             oos.close();
             clientSocket.close();
 
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "IO Exception", ex);
         }
     }
 }

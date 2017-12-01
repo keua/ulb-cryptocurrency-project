@@ -5,10 +5,10 @@
  */
 package com.ulb.cryptography.network;
 
+import com.ulb.cryptography.cryptocurrency.Account;
 import com.ulb.cryptography.cryptocurrency.Blockchain;
 import com.ulb.cryptography.cryptocurrency.Transaction;
 import com.ulb.cryptography.cryptocurrency.Wallet;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -26,10 +26,10 @@ import java.util.logging.Logger;
  */
 public class WalletClient implements Runnable {
 
+    private static final Logger LOGGER = Logger.getLogger(WalletClient.class.getName());
     private static Socket clientSocket = null;
     private static ObjectOutputStream oos = null;
     private static ObjectInputStream ois = null;
-    private static DataInputStream is = null;
     private static boolean closed = false;
     static Wallet WALLET;
     private static final int DEFAULT_PORT_NUMBER = 2222;
@@ -59,7 +59,6 @@ public class WalletClient implements Runnable {
             clientSocket = new Socket(host, portNumber);
             oos = new ObjectOutputStream(clientSocket.getOutputStream());
             ois = new ObjectInputStream(clientSocket.getInputStream());
-            //is = new DataInputStream(clientSocket.getInputStream());
 
         } catch (UnknownHostException e) {
 
@@ -105,12 +104,12 @@ public class WalletClient implements Runnable {
                  * Close the output stream, close the input stream, close the socket.
                  */
                 oos.close();
-                is.close();
+                ois.close();
                 clientSocket.close();
             } catch (IOException e) {
                 System.err.println("IOException:  " + e);
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(WalletClient.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
 
@@ -127,18 +126,6 @@ public class WalletClient implements Runnable {
          * Keep on reading from the socket till we receive "Bye" from the
          * server. Once we received that then we want to break.
          */
- /*String responseLine;
-        try {
-            while ((responseLine = is.readLine()) != null) {
-                System.out.println(responseLine);
-                if (responseLine.contains("*** Bye")) {
-                    break;
-                }
-            }
-            closed = true;
-        } catch (IOException e) {
-            System.err.println("IOException:  " + e);
-        }*/
     }
 
     private static void walletMenu() {
@@ -182,7 +169,7 @@ public class WalletClient implements Runnable {
                         String entradaTeclado2 = "";
                         entradaTeclado2 = entradaEscaner.nextLine();
 
-                        String activeAccount = WALLET.login(entradaTeclado, entradaTeclado2);
+                        Account activeAccount = WALLET.login(entradaTeclado, entradaTeclado2);
 
                         if (activeAccount != null) {
                             Boolean account = true;
@@ -208,7 +195,7 @@ public class WalletClient implements Runnable {
                                         String address = entradaTeclado3;
                                         Float total = WALLET.getBlockchain().getLastTransactionBySenderAddress("e45a4aff559c2e9f36cfff7ecfca30e869edc015");
                                         Float toSend = Float.parseFloat(entradaTeclado4);
-
+                                        // creating the transaction
                                         Transaction t = new Transaction(
                                                 total,
                                                 toSend,
@@ -217,12 +204,14 @@ public class WalletClient implements Runnable {
                                                 address,
                                                 new Date()
                                         );
-                                        
+                                        // sign the transaction before send to the relay
+                                        t.signTransaction(activeAccount.getPrivateKey());
+
                                         System.out.println(t.getFltInputSenderAmount()); // 10000000
                                         System.out.println(t.getFltOutputReceiverAmount());//100
                                         System.out.println(t.getFltOutputSenderAmount());//1000000-100
-                                        
-                                        //oos.writeObject(oos);
+
+                                        oos.writeObject(new Message(t));// send the transaction to the relay server
 
                                         System.out.println("Successful transaction");
                                         break;
@@ -232,10 +221,13 @@ public class WalletClient implements Runnable {
                                     case 0:
                                         account = false;
                                         break;
+                                    default:
+                                        System.out.println("Choose a valid option");
+                                        break;
                                 }
                             }
                             men = 1;
-                        } else if (!"2".equals(entradaTeclado2) || !"2".equals(entradaTeclado2)) {
+                        } else {
                             System.out.println("Invalid account");
                             men = 1;
                         }
@@ -256,9 +248,9 @@ public class WalletClient implements Runnable {
                 System.out.println("\n");
 
             } catch (NumberFormatException e) {
-                System.out.println("Uoop! Error!");
+                LOGGER.log(Level.SEVERE, "Uoop! Error!", e);
             } catch (GeneralSecurityException | IOException ex) {
-                Logger.getLogger(WalletClient.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, "Ge", ex);
             }
         }
         closed = true;

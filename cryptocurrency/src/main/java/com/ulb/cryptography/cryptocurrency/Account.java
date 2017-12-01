@@ -235,4 +235,10 @@ public class Account {
         this.AcountID = AcountID;
     }
 
+    public PrivateKey getPrivateKey() throws GeneralSecurityException {
+        String decrypted = Cryptography.AESdecrypt(this.aesKey, this.iv, this.encryptedPrivateKey);
+        PrivateKey privateKey = Cryptography.loadPrivateKey(decrypted);
+        return privateKey;
+    }
+
 }

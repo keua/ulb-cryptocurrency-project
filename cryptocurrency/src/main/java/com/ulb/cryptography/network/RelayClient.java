@@ -6,17 +6,11 @@
 package com.ulb.cryptography.network;
 
 import com.ulb.cryptography.cryptocurrency.Blockchain;
-import com.ulb.cryptography.cryptocurrency.RelayNode;
-import com.ulb.cryptography.cryptocurrency.Transaction;
-import static com.ulb.cryptography.network.RelayServer.masterConn;
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,11 +20,10 @@ import java.util.logging.Logger;
  */
 public class RelayClient extends Thread {
 
-    // to be a master client
+    private static final Logger LOGGER = Logger.getLogger(RelayClient.class.getName());
     private Socket masterClientSocket = null;
     public ObjectOutputStream moos = null;
     public ObjectInputStream mois = null;
-    //private static DataInputStream mis = null;
 
     public RelayClient(String host, int masterPort) {
         /*
@@ -40,59 +33,59 @@ public class RelayClient extends Thread {
 
             masterClientSocket = new Socket(host, masterPort);
             moos = new ObjectOutputStream(masterClientSocket.getOutputStream());
-            mois = new ObjectInputStream(masterClientSocket.getInputStream());//here
+            mois = new ObjectInputStream(masterClientSocket.getInputStream());
 
         } catch (UnknownHostException e) {
 
-            System.err.println("Don't know about host " + host);
+            LOGGER.log(Level.SEVERE, "Don''t know about host {0}", host);
 
         } catch (IOException e) {
-            System.err.println(
-                    "Couldn't get I/O for the connection to the host "
-                    + host
+            LOGGER.log(
+                    Level.SEVERE,
+                    "Couldn''t get I/O for the connection to the host {0}",
+                    host
             );
         }
 
     }
 
-    public void close() {
+    private void close() {
         try {
             /*
-            * Close the output stream, close the input stream, close the socket.
+             * Close the output stream, close the input stream, close the socket.
              */
             moos.close();
-            //mis.close();
             mois.close();
             masterClientSocket.close();
         } catch (IOException ex) {
-            Logger.getLogger(RelayClient.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "IO exception closing streams", ex);
         }
 
     }
 
     @Override
     public void run() {
-        int i = 0;
         while (!masterClientSocket.isClosed()) {
             try {
-                System.out.println("time, " + i);
                 Message messageFromClient = (Message) mois.readObject();
                 Object objectInMessage = messageFromClient.getObject();
                 if (Blockchain.class.isInstance(objectInMessage)) {
-                    System.out.println("getting the new blockchain");
+                    LOGGER.log(
+                            Level.INFO,
+                            "Getting the new blockchain from master node"
+                    );
                     Blockchain newBlockchain = (Blockchain) objectInMessage;
                     RelayServer.RELAY_NODE.setBlockChain(newBlockchain);
-                    System.out.println(
-                            "blocs in the mew blockchain "
-                            + newBlockchain.getListOfBlocks().size()
+                    LOGGER.log(
+                            Level.INFO,
+                            "Blocks in the new blockchain {0}",
+                            newBlockchain.getListOfBlocks().size()
                     );
                     moos.reset();
                 }
             } catch (IOException | ClassNotFoundException ex) {
-                Logger.getLogger(RelayServer.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, " IO or Class exception", ex);
             }
-            i++;
         }
     }
-
 }

@@ -104,13 +104,13 @@ public class Wallet {
         return String.valueOf(account.getAcountID()) + "," + account.getStrAddress();
     }
 
-    public String login(String user, String password) {
+    public Account login(String user, String password) {
         int id = Integer.parseInt(user);
         for (Account account : this.accounts) {
             if (id == account.getAcountID()) {
                 try {
                     account.checkpass(user, password);
-                    return account.getStrAddress();
+                    return account;
                 } catch (IOException ex) {
                     Logger.getLogger(Wallet.class.getName()).log(Level.SEVERE, null, ex);
                 }

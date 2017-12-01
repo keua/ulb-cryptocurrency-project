@@ -5,7 +5,6 @@
  */
 package com.ulb.cryptography.network;
 
-import com.ulb.cryptography.cryptocurrency.Blockchain;
 import com.ulb.cryptography.cryptocurrency.RelayNode;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -32,9 +31,9 @@ public class RelayServer {
     // to be a master client
     private static final int DEFAULT_MASTER_PORT_NUMBER = 3333;
     private static final String DEFAULT_HOST = "localhost";
-    public static int masterPort;
-    public static String masterHost;
-    public static RelayClient masterConn = null;
+    static int masterPort;
+    static String masterHost;
+    static RelayClient masterConn = null;
 
     public static void main(String args[]) throws ClassNotFoundException {
 
@@ -45,12 +44,12 @@ public class RelayServer {
         RelayServer.masterHost = DEFAULT_HOST;
 
         if (args.length < 2) {
-            System.out.println("Now using port number=" + portNumber);
+            LOGGER.log(Level.INFO, "Now using port number={0}", portNumber);
         } else {
             portNumber = Integer.parseInt(args[0]);
-            // this is to connect with the master node.
             RelayServer.masterPort = Integer.parseInt(args[1]);
             RelayServer.masterHost = args[2];
+            LOGGER.log(Level.INFO, "Now using port number={0}", portNumber);
         }
 
         /*
@@ -60,10 +59,11 @@ public class RelayServer {
         try {
             serverSocket = new ServerSocket(portNumber);
         } catch (IOException e) {
-            System.out.println(e);
+            LOGGER.log(Level.SEVERE, "IO exception creating the server socket", e);
         }
 
         // here create the client part
+        LOGGER.log(Level.INFO, "Starting connection with the Master node");
         masterConn = new RelayClient(masterHost, masterPort);
         masterConn.start();
         /*
@@ -88,7 +88,7 @@ public class RelayServer {
                     clientSocket.close();
                 }
             } catch (IOException e) {
-                System.out.println(e);
+                LOGGER.log(Level.SEVERE, "IO exception", e);
             }
 
         }
