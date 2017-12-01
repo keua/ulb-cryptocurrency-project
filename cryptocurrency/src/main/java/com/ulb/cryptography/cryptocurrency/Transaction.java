@@ -21,7 +21,9 @@ public class Transaction implements Serializable {
 
     private static final long serialVersionUID = 12358903454875L;
 
-    private Integer intAmount;
+    private Float fltInputSenderAmount;
+    private Float fltOutputReceiverAmount;
+    private Float fltOutputSenderAmount;
     private String strSenderAddress;
     private String strReceiver;
     private Date timeStamp;
@@ -29,13 +31,24 @@ public class Transaction implements Serializable {
 
     /**
      *
-     * @param intAmount
+     * @param inputSenderAmount
+     * @param outputReceiverAmount
+     * @param outputSenderAmount
      * @param strAddress
      * @param strReceiver
      * @param timeStamp
      */
-    public Transaction(Integer intAmount, String strAddress, String strReceiver, Date timeStamp) {
-        this.intAmount = intAmount;
+    public Transaction(
+            Float inputSenderAmount,
+            Float outputReceiverAmount,
+            Float outputSenderAmount,
+            String strAddress, 
+            String strReceiver,
+            Date timeStamp
+    ) {
+        this.fltInputSenderAmount = inputSenderAmount;
+        this.fltOutputReceiverAmount = outputReceiverAmount;
+        this.fltOutputSenderAmount = outputSenderAmount;
         this.strSenderAddress = strAddress;
         this.strReceiver = strReceiver;
         this.timeStamp = timeStamp;
@@ -45,7 +58,7 @@ public class Transaction implements Serializable {
      *
      */
     public Transaction() {
-        this.intAmount = null;
+        this.fltInputSenderAmount = null;
         this.strSenderAddress = null;
         this.strReceiver = null;
         this.timeStamp = new Date();
@@ -78,24 +91,24 @@ public class Transaction implements Serializable {
     public void signTransaction(PrivateKey privateKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
         String concatenatedValues
                 = this.timeStamp.toString()
-                + this.intAmount
+                + this.fltInputSenderAmount
                 + this.strReceiver
                 + this.strSenderAddress;
         this.transactionSigned = Cryptography.DSASign(privateKey, concatenatedValues);
     }
 
     /**
-     * @return the intAmount
+     * @return the fltInputSenderAmount
      */
-    public Integer getIntAmount() {
-        return intAmount;
+    public Float getFltInputSenderAmount() {
+        return fltInputSenderAmount;
     }
 
     /**
-     * @param intAmount the intAmount to set
+     * @param fltInputSenderAmount the fltInputSenderAmount to set
      */
-    public void setIntAmount(Integer intAmount) {
-        this.intAmount = intAmount;
+    public void setFltInputSenderAmount(Float fltInputSenderAmount) {
+        this.fltInputSenderAmount = fltInputSenderAmount;
     }
 
     /**
@@ -138,5 +151,33 @@ public class Transaction implements Serializable {
      */
     public void setTimeStamp(Date timeStamp) {
         this.timeStamp = timeStamp;
+    }
+
+    /**
+     * @return the fltOutputReceiverAmount
+     */
+    public Float getFltOutputReceiverAmount() {
+        return fltOutputReceiverAmount;
+    }
+
+    /**
+     * @param fltOutputReceiverAmount the fltOutputReceiverAmount to set
+     */
+    public void setFltOutputReceiverAmount(Float fltOutputReceiverAmount) {
+        this.fltOutputReceiverAmount = fltOutputReceiverAmount;
+    }
+
+    /**
+     * @return the fltOutputSenderAmount
+     */
+    public Float getFltOutputSenderAmount() {
+        return fltOutputSenderAmount;
+    }
+
+    /**
+     * @param fltOutputSenderAmount the fltOutputSenderAmount to set
+     */
+    public void setFltOutputSenderAmount(Float fltOutputSenderAmount) {
+        this.fltOutputSenderAmount = fltOutputSenderAmount;
     }
 }

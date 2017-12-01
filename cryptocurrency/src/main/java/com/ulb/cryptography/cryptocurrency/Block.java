@@ -8,18 +8,23 @@ package com.ulb.cryptography.cryptocurrency;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  *
  * @author masterulb
  */
-public class Block implements Serializable{
-    
+public class Block implements Serializable {
+
     private static final long serialVersionUID = 12358903454875L;
 
-    private List<Transaction> listOfTransactions;
+    private LinkedList<Transaction> listOfTransactions;
     private String strNonce;
     private String strHash;
+    ////S/////
+    private String prevHash;
+    private int BlockID;
+    ////S/////
 
     /**
      *
@@ -27,7 +32,7 @@ public class Block implements Serializable{
      * @param strNonce
      * @param strHash
      */
-    public Block(List<Transaction> listOfTransactions, String strNonce, String strHash) {
+    public Block(LinkedList<Transaction> listOfTransactions, String strNonce, String strHash) {
         this.listOfTransactions = listOfTransactions;
         this.strNonce = strNonce;
         this.strHash = strHash;
@@ -53,14 +58,14 @@ public class Block implements Serializable{
     /**
      * @return the listOfTransactions
      */
-    public List<Transaction> getListOfTransactions() {
+    public LinkedList<Transaction> getListOfTransactions() {
         return listOfTransactions;
     }
 
     /**
      * @param listOfTransactions the listOfTransactions to set
      */
-    public void setListOfTransactions(List<Transaction> listOfTransactions) {
+    public void setListOfTransactions(LinkedList<Transaction> listOfTransactions) {
         this.listOfTransactions = listOfTransactions;
     }
 
@@ -90,5 +95,22 @@ public class Block implements Serializable{
      */
     public void setStrHash(String strHash) {
         this.strHash = strHash;
+    }
+
+    ////S////
+    public String calcBlockHash() {
+        String Hash = Integer.toString(this.BlockID) + this.strNonce + this.prevHash + this.listOfTransactions.toString();
+        String sha256hex = DigestUtils.sha256Hex(Hash);
+        return sha256hex;
+    }
+
+    public void createFirstBlock() {
+
+        //Here we need to add transaction
+        this.BlockID = 0;
+        this.strNonce = "0";
+        this.prevHash = "";
+        this.strHash = this.calcBlockHash();
+
     }
 }

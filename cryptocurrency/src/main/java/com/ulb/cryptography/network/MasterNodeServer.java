@@ -5,11 +5,21 @@
  */
 package com.ulb.cryptography.network;
 
+import com.ulb.cryptography.cryptocurrency.Account;
+import com.ulb.cryptography.cryptocurrency.Block;
 import com.ulb.cryptography.cryptocurrency.MasterNode;
+import com.ulb.cryptography.cryptocurrency.Transaction;
+import com.ulb.cryptography.cryptocurrency.Wallet;
+import static com.ulb.cryptography.network.WalletClient.WALLET;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.util.Date;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -17,17 +27,47 @@ import java.net.Socket;
  */
 public class MasterNodeServer {
 
+    private static boolean closed = false;
     private static ServerSocket serverSocket = null;
     private static Socket clientSocket = null;
     private static final int MAX_CLIENTS = 10;
     private static final MasterClientThread[] CLIENT_THREADS = new MasterClientThread[MAX_CLIENTS];
-    static  MasterNode MASTER_NODE;
+    static MasterNode MASTER_NODE;
     private static final int DEFAULT_PORT_NUMBER = 3333;
+    static Wallet WALLET;
 
     public static void main(String args[]) {
 
         MASTER_NODE = new MasterNode();
+        WALLET = new Wallet();
 
+        try {
+            Account a = new Account("masternode");
+            MASTER_NODE.setAccount(a);
+            Transaction t
+                    = new Transaction(
+                            10000000.00f,
+                            0f,
+                            10000000.00f,
+                            MASTER_NODE.getAccount().getStrAddress(),
+                            MASTER_NODE.getAccount().getStrAddress(),
+                            new Date()
+                    );
+            // ini blockchain
+            Block b = new Block();
+            b.createFirstBlock();
+            b.getListOfTransactions().add(t);
+            MASTER_NODE.addBlockToChain(b);
+            int accountId = MASTER_NODE.getAccount().getAcountID();
+            System.out.println("Masternode account id: " + accountId);
+            System.out.println("address: " + a.getStrAddress());
+            WALLET.getAccounts().add(a);
+
+        } catch (GeneralSecurityException | IOException ex) {
+            Logger.getLogger(MasterNode.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //
         int portNumber = DEFAULT_PORT_NUMBER;
 
         if (args.length < 1) {
@@ -54,6 +94,7 @@ public class MasterNodeServer {
         while (true) {
             try {
                 clientSocket = serverSocket.accept();
+
                 int i = 0;
                 for (i = 0; i < MAX_CLIENTS; i++) {
                     if (CLIENT_THREADS[i] == null) {
@@ -67,6 +108,7 @@ public class MasterNodeServer {
                     //os.close();
                     clientSocket.close();
                 }
+
             } catch (IOException e) {
                 System.out.println(e);
             }

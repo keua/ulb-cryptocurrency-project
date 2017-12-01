@@ -49,6 +49,10 @@ public class RelayClientThread extends Thread {
                 oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 System.out.println("New client is connected in this server");
 
+                oos.writeObject(
+                        new Message(RelayServer.RELAY_NODE.getBlockChain())
+                );
+
                 while (true) {
                     //String line = ois.readLine();
                     //if (line.startsWith("/quit")) {
@@ -87,6 +91,10 @@ public class RelayClientThread extends Thread {
                                         )
                                 );
                         System.out.println("the block has been sent");
+
+                        oos.writeObject(
+                                new Message(RelayServer.RELAY_NODE.getBlockChain())
+                        );
 
                     }
                 }

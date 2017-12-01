@@ -5,10 +5,12 @@
  */
 package com.ulb.cryptography.network;
 
+import com.ulb.cryptography.cryptocurrency.Blockchain;
 import com.ulb.cryptography.cryptocurrency.Transaction;
 import com.ulb.cryptography.cryptocurrency.Wallet;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -26,6 +28,7 @@ public class WalletClient implements Runnable {
 
     private static Socket clientSocket = null;
     private static ObjectOutputStream oos = null;
+    private static ObjectInputStream ois = null;
     private static DataInputStream is = null;
     private static boolean closed = false;
     static Wallet WALLET;
@@ -55,7 +58,8 @@ public class WalletClient implements Runnable {
 
             clientSocket = new Socket(host, portNumber);
             oos = new ObjectOutputStream(clientSocket.getOutputStream());
-            is = new DataInputStream(clientSocket.getInputStream());
+            ois = new ObjectInputStream(clientSocket.getInputStream());
+            //is = new DataInputStream(clientSocket.getInputStream());
 
         } catch (UnknownHostException e) {
 
@@ -72,12 +76,26 @@ public class WalletClient implements Runnable {
          * If everything has been initialized then we want to write some data to the
          * socket we have opened a connection to on the port portNumber.
          */
-        if (clientSocket != null && oos != null && is != null) {
+        if (clientSocket != null && oos != null && ois != null) {
             try {
 
                 /* Create a thread to read from the server. */
                 new Thread(new WalletClient()).start();
                 while (!closed) {
+
+                    Message messageFromClient = (Message) ois.readObject();
+                    Object objectInMessage = messageFromClient.getObject();
+                    System.out.println("im here");
+                    if (Blockchain.class.isInstance(objectInMessage)) {
+                        System.out.println("getting the new blockchain");
+                        Blockchain newBlockchain = (Blockchain) objectInMessage;
+                        WALLET.setBlockchain(newBlockchain);
+                        System.out.println(
+                                "blocs in the mew blockchain "
+                                + newBlockchain.getListOfBlocks().size()
+                        );
+                    }
+
                     System.out.println("Here we have to send what ever we want");
 
                     WalletClient.walletMenu();
@@ -91,6 +109,8 @@ public class WalletClient implements Runnable {
                 clientSocket.close();
             } catch (IOException e) {
                 System.err.println("IOException:  " + e);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(WalletClient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -107,7 +127,7 @@ public class WalletClient implements Runnable {
          * Keep on reading from the socket till we receive "Bye" from the
          * server. Once we received that then we want to break.
          */
-        String responseLine;
+ /*String responseLine;
         try {
             while ((responseLine = is.readLine()) != null) {
                 System.out.println(responseLine);
@@ -118,7 +138,7 @@ public class WalletClient implements Runnable {
             closed = true;
         } catch (IOException e) {
             System.err.println("IOException:  " + e);
-        }
+        }*/
     }
 
     private static void walletMenu() {
@@ -146,12 +166,8 @@ public class WalletClient implements Runnable {
                         System.out.println("password:");
                         String password = "";
                         password = entradaEscaner.nextLine();
-                        String address = WALLET.createAccount(password);
-                        System.out.println("your address is: " + address);
-                        // this we will see later but it was working.
-                        Transaction t = new Transaction(5000, "AddSender", "AddReceiver", new Date());
-                        t.signTransaction(WALLET.getAccounts().get(0).getPrivateKey());
-                        oos.writeObject(new Message(t));
+                        String idAccount = WALLET.createAccount(password);
+                        System.out.println("your idAccount is: " + idAccount);
                         men = 1;
                         break;
                     case 2:
@@ -165,10 +181,10 @@ public class WalletClient implements Runnable {
                         System.out.println("password:");
                         String entradaTeclado2 = "";
                         entradaTeclado2 = entradaEscaner.nextLine();
-                        System.out.println(entradaTeclado2);
-                        System.out.println(entradaTeclado);
 
-                        if ("2".equals(entradaTeclado) && "2".equals(entradaTeclado2)) {
+                        String activeAccount = WALLET.login(entradaTeclado, entradaTeclado2);
+
+                        if (activeAccount != null) {
                             Boolean account = true;
                             while (account) {
                                 System.out.println(
@@ -188,6 +204,26 @@ public class WalletClient implements Runnable {
                                         System.out.println("Quantity");
                                         String entradaTeclado4 = "";
                                         entradaTeclado4 = entradaEscaner.nextLine();
+
+                                        String address = entradaTeclado3;
+                                        Float total = WALLET.getBlockchain().getLastTransactionBySenderAddress("e45a4aff559c2e9f36cfff7ecfca30e869edc015");
+                                        Float toSend = Float.parseFloat(entradaTeclado4);
+
+                                        Transaction t = new Transaction(
+                                                total,
+                                                toSend,
+                                                total - toSend,
+                                                "e45a4aff559c2e9f36cfff7ecfca30e869edc015",
+                                                address,
+                                                new Date()
+                                        );
+                                        
+                                        System.out.println(t.getFltInputSenderAmount()); // 10000000
+                                        System.out.println(t.getFltOutputReceiverAmount());//100
+                                        System.out.println(t.getFltOutputSenderAmount());//1000000-100
+                                        
+                                        //oos.writeObject(oos);
+
                                         System.out.println("Successful transaction");
                                         break;
                                     case 2:

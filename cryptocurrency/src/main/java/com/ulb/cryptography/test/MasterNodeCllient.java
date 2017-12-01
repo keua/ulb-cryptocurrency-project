@@ -85,7 +85,7 @@ public class MasterNodeCllient implements Runnable{
                 while (!closed) {
                     System.out.println("Here we have to send what ever we want");
                     Block block = (Block)ois.readObject();
-                    System.out.println(block.getListOfTransactions().get(0).getIntAmount());
+                    System.out.println(block.getListOfTransactions().get(0).getFltInputSenderAmount());
                 }
                 /*
                  * Close the output stream, close the input stream, close the socket.

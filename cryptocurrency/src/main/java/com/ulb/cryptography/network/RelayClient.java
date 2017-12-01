@@ -41,7 +41,6 @@ public class RelayClient extends Thread {
             masterClientSocket = new Socket(host, masterPort);
             moos = new ObjectOutputStream(masterClientSocket.getOutputStream());
             mois = new ObjectInputStream(masterClientSocket.getInputStream());//here
-            //mis = new DataInputStream(masterClientSocket.getInputStream());
 
         } catch (UnknownHostException e) {
 
@@ -88,12 +87,6 @@ public class RelayClient extends Thread {
                             + newBlockchain.getListOfBlocks().size()
                     );
                     moos.reset();
-                } else if (StringBuilder.class.isInstance(objectInMessage)) {
-                    StringBuilder s = (StringBuilder) objectInMessage;
-                    System.out.println(s);
-                } else if (LinkedList.class.isInstance(objectInMessage)) {
-                    LinkedList<Transaction> nt = (LinkedList<Transaction>) objectInMessage;
-                    System.out.println("list size " + nt.size());
                 }
             } catch (IOException | ClassNotFoundException ex) {
                 Logger.getLogger(RelayServer.class.getName()).log(Level.SEVERE, null, ex);

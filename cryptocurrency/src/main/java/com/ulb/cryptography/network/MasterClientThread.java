@@ -48,6 +48,12 @@ public class MasterClientThread extends Thread {
                 oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 //os = new PrintStream(clientSocket.getOutputStream());
                 LOGGER.log(Level.INFO, "Client starts connection");
+
+                //send the las blockchain
+                oos.writeObject(
+                        new Message(MasterNodeServer.MASTER_NODE.getBlockChain())
+                );
+
                 int i = 0;
                 while (true) {
                     //String line = ois.readLine();
@@ -73,6 +79,10 @@ public class MasterClientThread extends Thread {
                                 )
                         );
                         oos.reset();
+                    }
+
+                    if (Blockchain.class.isInstance(objectInMessage)) {
+
                     }
 
                     /*for (MasterClientThread thread : threads) {

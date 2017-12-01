@@ -9,6 +9,7 @@ import com.ulb.cryptography.cryptocurrency.Block;
 import com.ulb.cryptography.cryptocurrency.Blockchain;
 import com.ulb.cryptography.cryptocurrency.Miner;
 import com.ulb.cryptography.cryptocurrency.Transaction;
+import static com.ulb.cryptography.network.WalletClient.WALLET;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -62,7 +63,6 @@ public class MinerClient implements Runnable {
             clientSocket = new Socket(host, portNumber);
             inputLine = new BufferedReader(new InputStreamReader(System.in));
             os = new ObjectOutputStream(clientSocket.getOutputStream());
-            //is = new DataInputStream(clientSocket.getInputStream());
             ois = new ObjectInputStream(clientSocket.getInputStream());
 
         } catch (UnknownHostException e) {
@@ -85,16 +85,31 @@ public class MinerClient implements Runnable {
                 /* Create a thread to read from the server. */
                 new Thread(new MinerClient()).start();
                 while (!closed) {
+
+                    Message messageFromClient = (Message) ois.readObject();
+                    Object objectInMessage = messageFromClient.getObject();
+
+                    if (Blockchain.class.isInstance(objectInMessage)) {
+                        System.out.println("getting the new blockchain");
+                        Blockchain newBlockchain = (Blockchain) objectInMessage;
+                        MINER.setBlockchain(newBlockchain);
+                        System.out.println(
+                                "blocs in the mew blockchain "
+                                + newBlockchain.getListOfBlocks().size()
+                        );
+                    }
+
                     System.out.println("Here we have to send what ever we want");
                     if ("1".equals(inputLine.readLine())) {
+
                         RequestForTransactions rft = new RequestForTransactions();
                         rft.setAddress(MINER.getWallet().getAccounts().get(0).getStrAddress());
                         os.writeObject(new Message(rft));
 
-                        Message messageFromClient = (Message) ois.readObject();
-                        Object objectInMessage = messageFromClient.getObject();
+                        //Message messageFromClient = (Message) ois.readObject();
+                        //Object objectInMessage = messageFromClient.getObject();
                         LinkedList<Transaction> rn = (LinkedList<Transaction>) objectInMessage;
-                        System.out.println(rn.get(0).getIntAmount());
+                        System.out.println(rn.get(0).getFltInputSenderAmount());
                         //if (LinkedList.class.isInstance(o)) {
                         //LinkedList<Transaction> transactions = (LinkedList<Transaction>) o;
                         //System.out.println(transactions.get(0).getIntAmount());

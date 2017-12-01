@@ -10,6 +10,8 @@ import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -99,6 +101,22 @@ public class Wallet {
     public String createAccount(String password) throws GeneralSecurityException, NoSuchAlgorithmException, IOException {
         Account account = new Account(password);
         this.accounts.add(account);
-        return account.getStrAddress();
+        return String.valueOf(account.getAcountID()) + "," + account.getStrAddress();
+    }
+
+    public String login(String user, String password) {
+        int id = Integer.parseInt(user);
+        for (Account account : this.accounts) {
+            if (id == account.getAcountID()) {
+                try {
+                    account.checkpass(user, password);
+                    return account.getStrAddress();
+                } catch (IOException ex) {
+                    Logger.getLogger(Wallet.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+        return null;
     }
 }

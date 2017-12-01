@@ -13,6 +13,7 @@ public class MasterNode {
 
     private Blockchain blockChain;
     private Block block;
+    private Account account;
 
     /**
      *
@@ -73,6 +74,20 @@ public class MasterNode {
      */
     public void setBlock(Block block) {
         this.block = block;
+    }
+
+    /**
+     * @return the account
+     */
+    public Account getAccount() {
+        return account;
+    }
+
+    /**
+     * @param account the account to set
+     */
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
 }
