@@ -9,7 +9,6 @@ import com.ulb.cryptography.cryptocurrency.Block;
 import com.ulb.cryptography.cryptocurrency.Blockchain;
 import com.ulb.cryptography.cryptocurrency.Miner;
 import com.ulb.cryptography.cryptocurrency.Transaction;
-import static com.ulb.cryptography.network.WalletClient.WALLET;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -122,11 +121,16 @@ public class MinerClient implements Runnable {
                         LOGGER.log(Level.INFO, "Processing the transactions");
                         LinkedList<Transaction> transactions
                                 = (LinkedList<Transaction>) objectInMessage;
-                        Block b = new Block(transactions, "hash", "nonce");
+                        Block b = new Block(transactions);
+                        // Here I'm only mining this for testing
+                        //we must be mining the new created block
+                        b.calcBlockHash();
+                        Block minedBlock = MINER.ProveOfWork(b, 4);
+                        LOGGER.log(Level.INFO, "Done Mining!");
                         // Process the transaction list (mining stuff here)
 
                         LOGGER.log(Level.INFO, "Sending mined block to the relay");
-                        oos.writeObject(new Message(b));
+                        oos.writeObject(new Message(minedBlock));
                     }
                 }
                 /*

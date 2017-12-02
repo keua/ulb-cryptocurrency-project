@@ -75,6 +75,7 @@ public class MasterNodeServer {
             LOGGER.log(Level.INFO, "Now using port number={0}", portNumber);
         } else {
             portNumber = Integer.parseInt(args[0]);
+            LOGGER.log(Level.INFO, "Now using port number={0}", portNumber);
         }
 
         /*

@@ -43,12 +43,19 @@ public class WalletClient implements Runnable {
         String host = DEFAULT_HOST;
 
         if (args.length < 2) {
-            System.out.println(
-                    "Now using host=" + host + ", portNumber=" + portNumber
+            LOGGER.log(
+                    Level.INFO,
+                    "Now using host={0}, portNumber={1}",
+                    new Object[]{host, portNumber}
             );
         } else {
             host = args[0];
             portNumber = Integer.parseInt(args[1]);
+            LOGGER.log(
+                    Level.INFO,
+                    "Now using host={0}, portNumber={1}",
+                    new Object[]{host, portNumber}
+            );
         }
 
         /*
@@ -62,12 +69,13 @@ public class WalletClient implements Runnable {
 
         } catch (UnknownHostException e) {
 
-            System.err.println("Don't know about host " + host);
+            LOGGER.log(Level.SEVERE, "Don''t know about host {0}", host);
 
         } catch (IOException e) {
-            System.err.println(
-                    "Couldn't get I/O for the connection to the host "
-                    + host
+            LOGGER.log(
+                    Level.SEVERE,
+                    "Couldn''t get I/O for the connection to the host {0}",
+                    host
             );
         }
 
@@ -84,18 +92,17 @@ public class WalletClient implements Runnable {
 
                     Message messageFromClient = (Message) ois.readObject();
                     Object objectInMessage = messageFromClient.getObject();
-                    System.out.println("im here");
+                    LOGGER.log(Level.INFO, "Im here waiting messages from the relay");
                     if (Blockchain.class.isInstance(objectInMessage)) {
-                        System.out.println("getting the new blockchain");
+                        System.out.println("Getting the new blockchain");
                         Blockchain newBlockchain = (Blockchain) objectInMessage;
                         WALLET.setBlockchain(newBlockchain);
-                        System.out.println(
-                                "blocs in the mew blockchain "
-                                + newBlockchain.getListOfBlocks().size()
+                        LOGGER.log(
+                                Level.INFO,
+                                "Blocks in the new blockchain {0}",
+                                newBlockchain.getListOfBlocks().size()
                         );
                     }
-
-                    System.out.println("Here we have to send what ever we want");
 
                     WalletClient.walletMenu();
 
@@ -192,16 +199,21 @@ public class WalletClient implements Runnable {
                                         String entradaTeclado4 = "";
                                         entradaTeclado4 = entradaEscaner.nextLine();
 
-                                        String address = entradaTeclado3;
-                                        Float total = WALLET.getBlockchain().getLastTransactionBySenderAddress("e45a4aff559c2e9f36cfff7ecfca30e869edc015");
+                                        String addressToSend = entradaTeclado3;
+                                        String addressFromSend = activeAccount.getStrAddress();
+                                        Float total
+                                                = WALLET.getBlockchain()
+                                                        .getLastTransactionBySenderAddress(
+                                                                addressFromSend
+                                                        );
                                         Float toSend = Float.parseFloat(entradaTeclado4);
                                         // creating the transaction
                                         Transaction t = new Transaction(
                                                 total,
                                                 toSend,
                                                 total - toSend,
-                                                "e45a4aff559c2e9f36cfff7ecfca30e869edc015",
-                                                address,
+                                                addressFromSend,
+                                                addressToSend,
                                                 new Date()
                                         );
                                         // sign the transaction before send to the relay

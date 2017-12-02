@@ -7,7 +7,6 @@ package com.ulb.cryptography.cryptocurrency;
 
 import java.io.Serializable;
 import java.util.LinkedList;
-import java.util.List;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -55,6 +54,12 @@ public class Block implements Serializable {
         this.strHash = null;
     }
 
+    public Block(LinkedList<Transaction> listOfTransactions) {
+        this.listOfTransactions = listOfTransactions;
+        this.strNonce = "";
+        this.strHash = "";
+    }
+
     /**
      * @return the listOfTransactions
      */
@@ -95,6 +100,22 @@ public class Block implements Serializable {
      */
     public void setStrHash(String strHash) {
         this.strHash = strHash;
+    }
+
+    public String getprevHash() {
+        return prevHash;
+    }
+
+    public void setprevHash(String prevHash) {
+        this.prevHash = prevHash;
+    }
+
+    public int getBlockID() {
+        return BlockID;
+    }
+
+    public void setBlockID(int BlockID) {
+        this.BlockID = BlockID;
     }
 
     ////S////
