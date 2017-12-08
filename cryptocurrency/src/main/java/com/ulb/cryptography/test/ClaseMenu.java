@@ -23,7 +23,7 @@ public class ClaseMenu {
                         "Options:\n"
                         + "1.- Create new addresses \n"
                         + "2.- Login \n"
-                        + "3.- Full copy of teh blockchain \n"
+                        + "3.- Full copy of the blockchain \n"
                         + "0.- Exit"
                 );
 
