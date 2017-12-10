@@ -32,14 +32,14 @@ public class WalletClient implements Runnable {
     private static ObjectInputStream[] oisarray = new ObjectInputStream[2];
     private static boolean closed = false;
     static Wallet WALLET;
-    private static final int[] DEFAULT_PORT_NUMBER = {2222, 2223};
+    private static final int[] DEFAULT_RELAY_PORT_NUMBER = {2223, 2222};
     private static final String DEFAULT_HOST = "localhost";
 
     public static void main(String[] args) throws GeneralSecurityException {
 
         WALLET = new Wallet();
 
-        int portNumber[] = DEFAULT_PORT_NUMBER;
+        int portNumber[] = DEFAULT_RELAY_PORT_NUMBER;
         String host = DEFAULT_HOST;
 
         if (args.length < 2) {
@@ -72,7 +72,7 @@ public class WalletClient implements Runnable {
 
         } catch (UnknownHostException e) {
 
-            LOGGER.log(Level.SEVERE, "Don''t know about host {0}", host);
+            LOGGER.log(Level.SEVERE, "Don't know about host {0}", host);
 
         } catch (IOException e) {
             LOGGER.log(
@@ -211,7 +211,7 @@ public class WalletClient implements Runnable {
                                         Float total
                                                 = WALLET.getBlockchain()
                                                         .getLastTransactionBySenderAddress(
-                                                                /*addressFromSend*/"59bf3ca8478784721a5bbd0a5e2667fa17d87c75"//
+                                                                addressFromSend
                                                         );
                                         Float toSend = Float.parseFloat(entradaTeclado4);
                                         // creating the transaction
@@ -219,7 +219,7 @@ public class WalletClient implements Runnable {
                                                 total,
                                                 toSend,
                                                 total - toSend,
-                                                "59bf3ca8478784721a5bbd0a5e2667fa17d87c75" /*addressFromSend*/,
+                                                addressFromSend,
                                                 addressToSend,
                                                 new Date()
                                         );
@@ -234,7 +234,7 @@ public class WalletClient implements Runnable {
                                         for (ObjectOutputStream oos : oosarray) {
                                             oos.writeObject(new Message(t));// send the transaction to the relay server
                                         }
-                                        
+
                                         System.out.println("Successful transaction");
                                         break;
                                     case 2:

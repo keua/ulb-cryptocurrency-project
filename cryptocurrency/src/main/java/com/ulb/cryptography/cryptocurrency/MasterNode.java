@@ -104,42 +104,55 @@ public class MasterNode {
 
     public boolean checkBlock(Block newBlock) throws IOException, FileNotFoundException, GeneralSecurityException {
         String newHash = newBlock.calcBlockHash();
-        Block lastBlock = this.blockChain.getListOfBlocks().get(this.blockChain.getListOfBlocks().size() - 1);
-        
-        System.out.println("masternode new Hash "+newHash);
-        System.out.println("last block hash "+lastBlock.getStrHash());
-        System.out.println("new block id "+newBlock.getBlockID());
-        System.out.println("last block id "+lastBlock.getBlockID());
-        System.out.println("new block previous hash "+newBlock.getprevHash());
-        System.out.println("miner new hash "+newBlock.getStrHash());
 
-        //check that the new block is the last block in the chain
-        if (lastBlock.getBlockID() + 1 != newBlock.getBlockID()) {
-            return false;
-        } else //verify previous block hash
-        if (!lastBlock.getStrHash().equals(newBlock.getprevHash())) {
-            return false;
-        } else //verify this node hash
-        if (!newHash.equals(newBlock.getStrHash())) {
-            return false;
+        System.out.println("masternode new Hash " + newHash);
+        System.out.println("miner new hash " + newBlock.getStrHash());
+        //System.out.println("last block hash " + lastBlock.getStrHash());
+        System.out.println("new block previous hash " + newBlock.getprevHash());
+        System.out.println("new block id " + newBlock.getBlockID());
+        //System.out.println("last block id " + lastBlock.getBlockID());
+        System.out.println("block size " + newBlock.getListOfTransactions().size());
+        for (Transaction transaction : newBlock.getListOfTransactions()) {
+            System.out.println(transaction.toString());
         }
-        
-        System.out.println("First validations good");
-        
-        this.validateReceiverAddress(newBlock.getListOfTransactions());
-        this.validateSignature(newBlock.getListOfTransactions());
-        this.validateAmount(newBlock.getListOfTransactions());
-        //check all block's transactions... Not sure if we need this
-        //   for(Transaction t:newBlock.getListOfTransactions()){
-        //     this.checkTran(t);
-        // }
-        // Check if the sum of output transactions are equal the sum of input transactions + mining reward 
 
-        if (this.notValidTransactions.isEmpty()) {
+        if (newBlock.getBlockID() == 0) {// this is the first block
+
+            if (!newHash.equals(newBlock.getStrHash())) {
+                return false;
+            }
+            return true;
+        } else {
+            Block lastBlock = this.blockChain.getListOfBlocks().get(this.blockChain.getListOfBlocks().size() - 1);
+
+            //check that the new block is the last block in the chain
+            if (lastBlock.getBlockID() + 1 != newBlock.getBlockID()) {
+                return false;
+            } else //verify previous block hash
+            if (!lastBlock.getStrHash().equals(newBlock.getprevHash())) {
+                return false;
+            } else //verify this node hash
+            if (!newHash.equals(newBlock.getStrHash())) {
+                return false;
+            }
+
+            LinkedList<Transaction> tmp = new LinkedList<>();
+
+            tmp = this.validateReceiverAddress(newBlock.getListOfTransactions());
+            tmp = this.validateSignature(tmp);
+            this.validateAmount(tmp);
+            //check all block's transactions... Not sure if we need this
+            //   for(Transaction t:newBlock.getListOfTransactions()){
+            //     this.checkTran(t);
+            // }
+            // Check if the sum of output transactions are equal the sum of input transactions + mining reward 
+
+            if (!this.notValidTransactions.isEmpty()) {
+                return false;
+            }
+
             return true;
         }
-        
-        return false;
 
     }
 
@@ -168,8 +181,12 @@ public class MasterNode {
             PublicKey pk = this.getPublicKeyFromAddress(transaction.getStrReceiver());
             if (pk == null) {
                 this.notValidTransactions.add(transaction);
+                System.out.println("not valid trans in receiver address");
+                System.out.println(transaction.toString());
             } else {
                 validTransactions.add(transaction);
+                System.out.println("added to the valid transactions");
+                System.out.println(transaction.toString());
             }
 
         }
@@ -187,17 +204,27 @@ public class MasterNode {
                     + transaction.getFltOutputReceiverAmount()
                     + transaction.getFltOutputSenderAmount()
                     + transaction.getTranType();
+
             //add the rest values
             PublicKey pk = this.getPublicKeyFromAddress(transaction.getStrSenderAddress());
             int b = Cryptography.DSAVerify(pk, transaction.getTransactionSigned(), concatenatedValues);
             boolean sum = false;
-            if (transaction.getFltInputSenderAmount() == transaction.getFltOutputReceiverAmount() + transaction.getFltOutputSenderAmount()) {
+            if (!transaction.getTranType().equals("reward")) {
+                if (transaction.getFltInputSenderAmount() == transaction.getFltOutputReceiverAmount() + transaction.getFltOutputSenderAmount()) {
+                    sum = true;
+                }
+            } else {
                 sum = true;
             }
+            System.out.println("b=" + b + " sum=" + sum);
             if ((b == 1) && (sum)) {
                 validTransactions.add(transaction);
+                System.out.println("added to the valid transactions in signature");
+                System.out.println(transaction.toString());
             } else {
                 notValidTransactions.add(transaction);
+                System.out.println("No valide signature");
+                System.out.println(transaction.toString());
             }
         }
         return validTransactions;
@@ -207,6 +234,7 @@ public class MasterNode {
 
         LinkedList<Transaction> validTransactions = new LinkedList<>();
         HashMap<String, LinkedList<Transaction>> hm = new HashMap();
+
         for (Transaction transaction : transactions) {
             if (hm.containsKey(transaction.getStrSenderAddress())) {
                 hm.get(transaction.getStrSenderAddress()).add(transaction);
@@ -215,31 +243,44 @@ public class MasterNode {
                 hm.get(transaction.getStrSenderAddress()).add(transaction);
             }
         }
+        Transaction rewardedTransaction = new Transaction();
         for (Map.Entry<String, LinkedList<Transaction>> entry : hm.entrySet()) {
             String address = entry.getKey();
             LinkedList<Transaction> transactionsByAddres = entry.getValue();
-            Transaction rewardedTransaction = new Transaction();
             Float lastAmount = this.blockChain.getLastTransactionBySenderAddress(address);
             Float sum = 0f;
+            System.out.println("sender addres " + address);
             for (Transaction transactionByAddres : transactionsByAddres) {
                 if (!transactionByAddres.getTranType().equals("reward")) {
                     sum += transactionByAddres.getFltInputSenderAmount();
+                    System.out.println("sum " + sum);
                     if (sum <= lastAmount) {
                         validTransactions.add(transactionByAddres);
+                        System.out.println("added to the valid amount");
+                        System.out.println(transactionByAddres.toString());
                     } else {
                         this.notValidTransactions.add(transactionByAddres);
                         sum = sum - transactionByAddres.getFltInputSenderAmount();
+                        System.out.println("Ive found an invalid transaction");
                     }
                 } else {
                     rewardedTransaction = transactionByAddres;
+                    System.out.println("Ive found the reward transaction");
                 }
             }
-
+        }
+        if (!validTransactions.isEmpty() && rewardedTransaction.getFltOutputSenderAmount() != null) {
+            System.out.println("the valid amount is " + validTransactions.size() * 1.5f);
+            System.out.println("the rewarded amount is " + rewardedTransaction.getFltOutputSenderAmount());
             if (rewardedTransaction.getFltOutputSenderAmount() == validTransactions.size() * 1.5f) {
                 validTransactions.add(rewardedTransaction);
             } else {
                 this.notValidTransactions.add(rewardedTransaction);
+                System.out.println("the rewarded trans is wrong inside");
             }
+        } else {
+            this.notValidTransactions.add(rewardedTransaction);
+            System.out.println("the rewarded trans is wrong outside");
         }
         return validTransactions;
     }

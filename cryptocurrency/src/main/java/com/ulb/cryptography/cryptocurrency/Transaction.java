@@ -13,6 +13,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.Date;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  *
@@ -113,7 +114,7 @@ public class Transaction implements Serializable {
                 + this.strSenderAddress
                 + this.fltOutputReceiverAmount
                 + this.fltOutputSenderAmount
-                + this.getTranType();
+                + this.TranType;
         this.transactionSigned = Cryptography.DSASign(privateKey, concatenatedValues);
     }
 
@@ -199,5 +200,10 @@ public class Transaction implements Serializable {
      */
     public void setFltOutputSenderAmount(Float fltOutputSenderAmount) {
         this.fltOutputSenderAmount = fltOutputSenderAmount;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

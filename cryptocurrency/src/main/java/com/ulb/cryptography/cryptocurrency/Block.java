@@ -8,6 +8,7 @@ package com.ulb.cryptography.cryptocurrency;
 import java.io.Serializable;
 import java.util.LinkedList;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  *
@@ -134,5 +135,10 @@ public class Block implements Serializable {
         this.prevHash = "";
         this.strHash = this.calcBlockHash();
 
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

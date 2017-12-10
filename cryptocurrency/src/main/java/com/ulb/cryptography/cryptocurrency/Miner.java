@@ -122,20 +122,32 @@ public class Miner {
     // transaction the miner get fro the relay... and the prevBlock is the last block on
     // the block chain cuz to create a new block we need the hash of the previous one
     public Block CreateNewBlock(LinkedList<Transaction> listOfTransactions) {
-        //Thia is the block to be mined
+
         Block block = new Block();
-        Block lastBlock = this.blockchain.getListOfBlocks().get(this.blockchain.getListOfBlocks().size() - 1);
-        block.setBlockID(lastBlock.getBlockID() + 1);
-        block.setListOfTransactions(listOfTransactions);
-        //depending on how we'll create a transaction
-        // A reward transaction has to be added here to the list of transactions
-        // Add the reward transaction to the list
-        //Here we generate a random string using the class RandomString for the nonce
-        // Here I'm using 8 length string but we should use a longer one
-        // we can also a random length string
         RandomString gen = new RandomString(8, ThreadLocalRandom.current());
-        block.setStrNonce(gen.toString());
-        block.setprevHash(lastBlock.getStrHash());
+
+        // first block, first transaction
+        if (this.blockchain.getListOfBlocks().isEmpty()) {
+            System.out.println("Creating the first block with " + listOfTransactions.size() + " transactions");
+            block.setListOfTransactions(listOfTransactions);
+            block.createFirstBlock();
+            block.setStrNonce(gen.toString());
+
+        } else {
+            //Thia is the block to be mined
+            Block lastBlock = this.blockchain.getListOfBlocks().get(this.blockchain.getListOfBlocks().size() - 1);
+            block.setBlockID(lastBlock.getBlockID() + 1);
+            block.setListOfTransactions(listOfTransactions);
+            //depending on how we'll create a transaction
+            // A reward transaction has to be added here to the list of transactions
+            // Add the reward transaction to the list
+            //Here we generate a random string using the class RandomString for the nonce
+            // Here I'm using 8 length string but we should use a longer one
+            // we can also a random length string
+            block.setStrNonce(gen.toString());
+            block.setprevHash(lastBlock.getStrHash());
+        }
+
         return block;
     }
 
@@ -265,5 +277,9 @@ public class Miner {
      */
     public void setNotValidTransactions(LinkedList<Transaction> notValidTransactions) {
         this.notValidTransactions = notValidTransactions;
+    }
+
+    public Float getLastTransactionBySenderAddress(String minerAddress) {
+        return this.blockchain.getLastTransactionBySenderAddress(minerAddress);
     }
 }

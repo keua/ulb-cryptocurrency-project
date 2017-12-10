@@ -36,16 +36,16 @@ public class MasterNodeServer implements Runnable {
             = new MasterClientThread[MAX_CLIENTS];
     static MasterNode MASTER_NODE;
     private static final int DEFAULT_PORT_NUMBER = 3333;
-    static Wallet WALLET;
+    //static Wallet WALLET;
     static LinkedList<Message> messageQueue;
 
     public static void main(String args[]) throws IOException, FileNotFoundException, GeneralSecurityException {
 
         MASTER_NODE = new MasterNode();
-        WALLET = new Wallet();
+        //WALLET = new Wallet();
         messageQueue = new LinkedList<>();
 
-        try {
+        /*try {
             // initialize blockchain (below)
             Account a = new Account("masternode");
             MASTER_NODE.setAccount(a);
@@ -70,8 +70,7 @@ public class MasterNodeServer implements Runnable {
 
         } catch (GeneralSecurityException | IOException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
-        }
-
+        }*/
         //
         int portNumber = DEFAULT_PORT_NUMBER;
 
@@ -145,8 +144,7 @@ public class MasterNodeServer implements Runnable {
                                     );
                                     thread.oos.writeObject(
                                             new Message(
-                                                    MasterNodeServer.MASTER_NODE
-                                                            .getBlockChain(),
+                                                    MasterNodeServer.MASTER_NODE.getBlockChain(),
                                                     messageFromClient.getObject2()
                                             )
                                     );
@@ -157,7 +155,7 @@ public class MasterNodeServer implements Runnable {
                             LOGGER.log(
                                     Level.INFO,
                                     "New Block added to the blockchain,"
-                                            + " blocks in the blockchain: {0}",
+                                    + " blocks in the blockchain: {0}",
                                     MasterNodeServer.MASTER_NODE
                                             .getBlockChain()
                                             .getListOfBlocks()
@@ -169,11 +167,11 @@ public class MasterNodeServer implements Runnable {
                             LOGGER.info("The block check fail");
                         }
                     } catch (IOException | GeneralSecurityException ex) {
-                        Logger.getLogger(MasterNodeServer.class.getName()).log(Level.SEVERE, null, ex);
+                        LOGGER.log(Level.SEVERE, null, ex);
                     }
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(MasterNodeServer.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
     }

@@ -28,10 +28,12 @@ public class RelayClientThread extends Thread {
     ObjectOutputStream oos = null;
     ObjectInputStream ois = null;
 
-    public RelayClientThread(Socket clientSocket, RelayClientThread[] threads) {
+    public RelayClientThread(Socket clientSocket, RelayClientThread[] threads) throws IOException {
         this.clientSocket = clientSocket;
         this.threads = threads;
         this.maxClientsCount = threads.length;
+        ois = new ObjectInputStream(clientSocket.getInputStream());
+        oos = new ObjectOutputStream(clientSocket.getOutputStream());
     }
 
     @Override
@@ -40,8 +42,8 @@ public class RelayClientThread extends Thread {
 
             try {
 
-                ois = new ObjectInputStream(clientSocket.getInputStream());
-                oos = new ObjectOutputStream(clientSocket.getOutputStream());
+                //ois = new ObjectInputStream(clientSocket.getInputStream());
+                //oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 System.out.println("New client is connected in this server");
 
                 oos.writeObject(

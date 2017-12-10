@@ -90,6 +90,7 @@ public class RelayClient extends Thread {
                     for (int i = 0; i < numberTransToDelete; i++) {
                         RelayServer.RELAY_NODE.getTransactionList().remove();
                     }
+                    LOGGER.log(Level.INFO, "transactionlist size {0}", RelayServer.RELAY_NODE.getTransactionList().size());
                     for (RelayClientThread relayClientThread : RelayServer.CLIENT_THREADS) {
                         if (relayClientThread != null) {
                             relayClientThread.oos.writeObject(

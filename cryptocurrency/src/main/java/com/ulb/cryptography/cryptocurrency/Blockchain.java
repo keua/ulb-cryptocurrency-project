@@ -61,50 +61,53 @@ public class Blockchain implements Serializable {
         Transaction lastSenderTrans = null;
         Block lastBlock = null;
         Float lastAmount = 0f;
+        LinkedList<Block> temp = (LinkedList<Block>) this.listOfBlocks.clone();
 
-        Iterator lit = this.listOfBlocks.descendingIterator();
-        System.out.println("Backward Iterations");
+        Iterator lit = temp.descendingIterator();
+        System.out.println("The blockchain has " + temp.size() + " blocks");
         while (lit.hasNext()) {
             Block b = (Block) lit.next();
             Iterator lit2 = b.getListOfTransactions().descendingIterator();
+            System.out.println(b.toString());
             while (lit2.hasNext()) {
                 Transaction t = (Transaction) lit2.next();
+                System.out.println(t.toString());
                 if (t.getStrSenderAddress().equals(address)) {
                     lastSenderTrans = t;
                     lastAmount = lastSenderTrans.getFltOutputSenderAmount();
-                    System.out.println(lastAmount);
-                    System.out.println("isa " + String.valueOf(lastSenderTrans.getFltInputSenderAmount()));
-                    System.out.println("ora " + String.valueOf(lastSenderTrans.getFltOutputReceiverAmount()));
-                    System.out.println("osa " + String.valueOf(lastSenderTrans.getFltOutputSenderAmount()));
-                    System.out.println("adr " + String.valueOf(lastSenderTrans.getStrReceiver()));
-                    System.out.println("ads " + String.valueOf(lastSenderTrans.getStrSenderAddress()));
-                    System.out.println("t " + String.valueOf(lastSenderTrans.getTimeStamp()));
+                    System.out.println("Ive found the last Amount this address sent " + lastAmount);
+                    lastBlock = b;
                     break;
                 }
             }
-            lastBlock = b;
-            break;
-        }
-        for (int i = listOfBlocks.indexOf(lastBlock); i < listOfBlocks.size(); i++) {
-            Block b = listOfBlocks.get(i);
-            if (i == listOfBlocks.indexOf(lastBlock)) {
-                for (int j = lastBlock.getListOfTransactions().indexOf(lastSenderTrans) + 1; j < lastBlock.getListOfTransactions().size(); j++) {
-                    Transaction t = lastBlock.getListOfTransactions().get(j);
-                    if (t.getStrReceiver().equals(address)) {
-                        lastAmount += t.getFltOutputReceiverAmount();
-                        System.out.println(lastAmount);
-                    }
-                }
-            } else {
-                for (int j = 0; j < b.getListOfTransactions().size(); j++) {
-                    Transaction t = lastBlock.getListOfTransactions().get(j);
-                    if (t.getStrReceiver().equals(address)) {
-                        lastAmount += t.getFltOutputReceiverAmount();
-                        System.out.println(lastAmount);
-                    }
-                }
+            if (lastBlock != null) {
+                break;
             }
+        }
+        if (temp.indexOf(lastBlock) > -1) { // if not exists mean the addres dont have any transaction yet
+            System.out.println("we will start in the block no. " + temp.indexOf(lastBlock));
+            for (int i = temp.indexOf(lastBlock); i < temp.size(); i++) {
+                Block b = temp.get(i);
+                if (i == temp.indexOf(lastBlock)) {
+                    System.out.println("In the transaction no. " + b.getListOfTransactions().indexOf(lastSenderTrans));
+                    for (int j = b.getListOfTransactions().indexOf(lastSenderTrans) + 1; j < b.getListOfTransactions().size(); j++) {
+                        Transaction t = b.getListOfTransactions().get(j);
+                        if (t.getStrReceiver().equals(address)) {
+                            lastAmount += t.getFltOutputReceiverAmount();
+                            System.out.println(lastAmount);
+                        }
+                    }
+                } else {
+                    for (int j = 0; j < b.getListOfTransactions().size(); j++) {
+                        Transaction t = b.getListOfTransactions().get(j);
+                        if (t.getStrReceiver().equals(address)) {
+                            lastAmount += t.getFltOutputReceiverAmount();
+                            System.out.println(lastAmount);
+                        }
+                    }
+                }
 
+            }
         }
 
         return lastAmount;
