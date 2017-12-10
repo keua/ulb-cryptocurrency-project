@@ -10,11 +10,13 @@ import com.ulb.cryptography.cryptocurrency.Block;
 import com.ulb.cryptography.cryptocurrency.MasterNode;
 import com.ulb.cryptography.cryptocurrency.Transaction;
 import com.ulb.cryptography.cryptocurrency.Wallet;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +24,7 @@ import java.util.logging.Logger;
  *
  * @author masterulb
  */
-public class MasterNodeServer {
+public class MasterNodeServer implements Runnable {
 
     private static final Logger LOGGER
             = Logger.getLogger(MasterNode.class.getName());
@@ -35,11 +37,13 @@ public class MasterNodeServer {
     static MasterNode MASTER_NODE;
     private static final int DEFAULT_PORT_NUMBER = 3333;
     static Wallet WALLET;
+    static LinkedList<Message> messageQueue;
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException, FileNotFoundException, GeneralSecurityException {
 
         MASTER_NODE = new MasterNode();
         WALLET = new Wallet();
+        messageQueue = new LinkedList<>();
 
         try {
             // initialize blockchain (below)
@@ -89,6 +93,8 @@ public class MasterNodeServer {
             LOGGER.log(Level.SEVERE, "IO exception creating the socket", e);
         }
 
+        new Thread(new MasterNodeServer()).start();
+
         /*
          * Create a client socket for each connection and pass it to a new client
          * thread.
@@ -113,6 +119,61 @@ public class MasterNodeServer {
 
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Io exception ", e);
+            }
+
+        }
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                Thread.sleep(10000);
+                LOGGER.log(Level.INFO, "{0}", messageQueue.size());
+                if (!messageQueue.isEmpty()) {
+                    try {
+                        LOGGER.info("inside the queue");
+                        Message messageFromClient = messageQueue.getFirst();
+                        Block block = (Block) messageFromClient.getObject();
+                        if (MasterNodeServer.MASTER_NODE.checkBlock(block)) {
+                            MasterNodeServer.MASTER_NODE.addBlockToChain(block);
+                            for (MasterClientThread thread : CLIENT_THREADS) {
+                                if (thread != null) {
+                                    LOGGER.log(
+                                            Level.INFO,
+                                            "Sending the updated blockchain to the relays"
+                                    );
+                                    thread.oos.writeObject(
+                                            new Message(
+                                                    MasterNodeServer.MASTER_NODE
+                                                            .getBlockChain(),
+                                                    messageFromClient.getObject2()
+                                            )
+                                    );
+                                    thread.oos.reset();// the most important line in the project
+                                }
+                            }
+                            messageQueue.clear();
+                            LOGGER.log(
+                                    Level.INFO,
+                                    "New Block added to the blockchain,"
+                                            + " blocks in the blockchain: {0}",
+                                    MasterNodeServer.MASTER_NODE
+                                            .getBlockChain()
+                                            .getListOfBlocks()
+                                            .size()
+                            );
+                        } else {
+                            // send a reject message
+                            messageQueue.remove();
+                            LOGGER.info("The block check fail");
+                        }
+                    } catch (IOException | GeneralSecurityException ex) {
+                        Logger.getLogger(MasterNodeServer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MasterNodeServer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

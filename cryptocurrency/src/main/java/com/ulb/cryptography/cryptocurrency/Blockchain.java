@@ -73,12 +73,12 @@ public class Blockchain implements Serializable {
                     lastSenderTrans = t;
                     lastAmount = lastSenderTrans.getFltOutputSenderAmount();
                     System.out.println(lastAmount);
-                    System.out.println("isa "+String.valueOf(lastSenderTrans.getFltInputSenderAmount()));
-                    System.out.println("ora "+String.valueOf(lastSenderTrans.getFltOutputReceiverAmount()));
-                    System.out.println("osa "+String.valueOf(lastSenderTrans.getFltOutputSenderAmount()));
-                    System.out.println("adr "+String.valueOf(lastSenderTrans.getStrReceiver()));
-                    System.out.println("ads "+String.valueOf(lastSenderTrans.getStrSenderAddress()));
-                    System.out.println("t "+String.valueOf(lastSenderTrans.getTimeStamp()));
+                    System.out.println("isa " + String.valueOf(lastSenderTrans.getFltInputSenderAmount()));
+                    System.out.println("ora " + String.valueOf(lastSenderTrans.getFltOutputReceiverAmount()));
+                    System.out.println("osa " + String.valueOf(lastSenderTrans.getFltOutputSenderAmount()));
+                    System.out.println("adr " + String.valueOf(lastSenderTrans.getStrReceiver()));
+                    System.out.println("ads " + String.valueOf(lastSenderTrans.getStrSenderAddress()));
+                    System.out.println("t " + String.valueOf(lastSenderTrans.getTimeStamp()));
                     break;
                 }
             }
@@ -86,13 +86,25 @@ public class Blockchain implements Serializable {
             break;
         }
         for (int i = listOfBlocks.indexOf(lastBlock); i < listOfBlocks.size(); i++) {
-            for (int j = lastBlock.getListOfTransactions().indexOf(lastSenderTrans) + 1; j < lastBlock.getListOfTransactions().size(); j++) {
-                Transaction t = lastBlock.getListOfTransactions().get(i);
-                if (t.getStrReceiver().equals(address)) {
-                    lastAmount += t.getFltOutputReceiverAmount();
-                    System.out.println(lastAmount);
+            Block b = listOfBlocks.get(i);
+            if (i == listOfBlocks.indexOf(lastBlock)) {
+                for (int j = lastBlock.getListOfTransactions().indexOf(lastSenderTrans) + 1; j < lastBlock.getListOfTransactions().size(); j++) {
+                    Transaction t = lastBlock.getListOfTransactions().get(j);
+                    if (t.getStrReceiver().equals(address)) {
+                        lastAmount += t.getFltOutputReceiverAmount();
+                        System.out.println(lastAmount);
+                    }
+                }
+            } else {
+                for (int j = 0; j < b.getListOfTransactions().size(); j++) {
+                    Transaction t = lastBlock.getListOfTransactions().get(j);
+                    if (t.getStrReceiver().equals(address)) {
+                        lastAmount += t.getFltOutputReceiverAmount();
+                        System.out.println(lastAmount);
+                    }
                 }
             }
+
         }
 
         return lastAmount;

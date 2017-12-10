@@ -122,6 +122,7 @@ public class Block implements Serializable {
     public String calcBlockHash() {
         String Hash = Integer.toString(this.BlockID) + this.strNonce + this.prevHash + this.listOfTransactions.toString();
         String sha256hex = DigestUtils.sha256Hex(Hash);
+        this.strHash = sha256hex;
         return sha256hex;
     }
 

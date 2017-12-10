@@ -10,6 +10,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.Date;
 
@@ -18,6 +19,20 @@ import java.util.Date;
  * @author masterulb
  */
 public class Transaction implements Serializable {
+
+    /**
+     * @return the TranType
+     */
+    public String getTranType() {
+        return TranType;
+    }
+
+    /**
+     * @param TranType the TranType to set
+     */
+    public void setTranType(String TranType) {
+        this.TranType = TranType;
+    }
 
     private static final long serialVersionUID = 12358903454875L;
 
@@ -28,6 +43,7 @@ public class Transaction implements Serializable {
     private String strReceiver;
     private Date timeStamp;
     private byte[] transactionSigned;
+    private String TranType;
 
     /**
      *
@@ -42,7 +58,7 @@ public class Transaction implements Serializable {
             Float inputSenderAmount,
             Float outputReceiverAmount,
             Float outputSenderAmount,
-            String strAddress, 
+            String strAddress,
             String strReceiver,
             Date timeStamp
     ) {
@@ -87,13 +103,17 @@ public class Transaction implements Serializable {
 
     /**
      *
+     * @param privateKey
      */
     public void signTransaction(PrivateKey privateKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
         String concatenatedValues
                 = this.timeStamp.toString()
                 + this.fltInputSenderAmount
                 + this.strReceiver
-                + this.strSenderAddress;
+                + this.strSenderAddress
+                + this.fltOutputReceiverAmount
+                + this.fltOutputSenderAmount
+                + this.getTranType();
         this.transactionSigned = Cryptography.DSASign(privateKey, concatenatedValues);
     }
 

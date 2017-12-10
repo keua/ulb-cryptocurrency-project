@@ -27,19 +27,19 @@ import java.util.logging.Logger;
 public class WalletClient implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(WalletClient.class.getName());
-    private static Socket clientSocket = null;
-    private static ObjectOutputStream oos = null;
-    private static ObjectInputStream ois = null;
+    private static Socket[] clientSockets = new Socket[2];
+    private static ObjectOutputStream[] oosarray = new ObjectOutputStream[2];
+    private static ObjectInputStream[] oisarray = new ObjectInputStream[2];
     private static boolean closed = false;
     static Wallet WALLET;
-    private static final int DEFAULT_PORT_NUMBER = 2222;
+    private static final int[] DEFAULT_PORT_NUMBER = {2222, 2223};
     private static final String DEFAULT_HOST = "localhost";
 
     public static void main(String[] args) throws GeneralSecurityException {
 
         WALLET = new Wallet();
 
-        int portNumber = DEFAULT_PORT_NUMBER;
+        int portNumber[] = DEFAULT_PORT_NUMBER;
         String host = DEFAULT_HOST;
 
         if (args.length < 2) {
@@ -50,7 +50,8 @@ public class WalletClient implements Runnable {
             );
         } else {
             host = args[0];
-            portNumber = Integer.parseInt(args[1]);
+            portNumber[0] = Integer.parseInt(args[1]);
+            portNumber[1] = Integer.parseInt(args[2]);
             LOGGER.log(
                     Level.INFO,
                     "Now using host={0}, portNumber={1}",
@@ -62,10 +63,12 @@ public class WalletClient implements Runnable {
          * Open a socket on a given host and port. Open input and output streams.
          */
         try {
-
-            clientSocket = new Socket(host, portNumber);
-            oos = new ObjectOutputStream(clientSocket.getOutputStream());
-            ois = new ObjectInputStream(clientSocket.getInputStream());
+            for (int i = 0; i < portNumber.length; i++) {
+                System.out.println(portNumber[i]);
+                clientSockets[i] = new Socket(host, portNumber[i]);
+                oosarray[i] = new ObjectOutputStream(clientSockets[i].getOutputStream());
+                oisarray[i] = new ObjectInputStream(clientSockets[i].getInputStream());
+            }
 
         } catch (UnknownHostException e) {
 
@@ -83,14 +86,14 @@ public class WalletClient implements Runnable {
          * If everything has been initialized then we want to write some data to the
          * socket we have opened a connection to on the port portNumber.
          */
-        if (clientSocket != null && oos != null && ois != null) {
+        if (clientSockets[0] != null && oosarray[0] != null && oisarray[0] != null) {
             try {
 
                 /* Create a thread to read from the server. */
                 new Thread(new WalletClient()).start();
                 while (!closed) {
 
-                    Message messageFromClient = (Message) ois.readObject();
+                    Message messageFromClient = (Message) oisarray[0].readObject();
                     Object objectInMessage = messageFromClient.getObject();
                     LOGGER.log(Level.INFO, "Im here waiting messages from the relay");
                     if (Blockchain.class.isInstance(objectInMessage)) {
@@ -104,15 +107,19 @@ public class WalletClient implements Runnable {
                         );
                     }
 
+                    for (ObjectOutputStream oos : oosarray) {
+                        oos.writeObject(new Message(new StringBuilder("hi everyone")));
+                    }
+
                     WalletClient.walletMenu();
 
                 }
                 /*
                  * Close the output stream, close the input stream, close the socket.
                  */
-                oos.close();
-                ois.close();
-                clientSocket.close();
+                oosarray[0].close();
+                oisarray[0].close();
+                clientSockets[0].close();
             } catch (IOException e) {
                 System.err.println("IOException:  " + e);
             } catch (ClassNotFoundException ex) {
@@ -204,7 +211,7 @@ public class WalletClient implements Runnable {
                                         Float total
                                                 = WALLET.getBlockchain()
                                                         .getLastTransactionBySenderAddress(
-                                                                addressFromSend
+                                                                /*addressFromSend*/"59bf3ca8478784721a5bbd0a5e2667fa17d87c75"//
                                                         );
                                         Float toSend = Float.parseFloat(entradaTeclado4);
                                         // creating the transaction
@@ -212,10 +219,11 @@ public class WalletClient implements Runnable {
                                                 total,
                                                 toSend,
                                                 total - toSend,
-                                                addressFromSend,
+                                                "59bf3ca8478784721a5bbd0a5e2667fa17d87c75" /*addressFromSend*/,
                                                 addressToSend,
                                                 new Date()
                                         );
+                                        t.setTranType("normal");
                                         // sign the transaction before send to the relay
                                         t.signTransaction(activeAccount.getPrivateKey());
 
@@ -223,8 +231,10 @@ public class WalletClient implements Runnable {
                                         System.out.println(t.getFltOutputReceiverAmount());//100
                                         System.out.println(t.getFltOutputSenderAmount());//1000000-100
 
-                                        oos.writeObject(new Message(t));// send the transaction to the relay server
-
+                                        for (ObjectOutputStream oos : oosarray) {
+                                            oos.writeObject(new Message(t));// send the transaction to the relay server
+                                        }
+                                        
                                         System.out.println("Successful transaction");
                                         break;
                                     case 2:

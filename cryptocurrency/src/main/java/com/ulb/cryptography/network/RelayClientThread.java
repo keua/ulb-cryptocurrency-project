@@ -25,8 +25,8 @@ public class RelayClientThread extends Thread {
     private Socket clientSocket = null;
     private final RelayClientThread[] threads;
     private final int maxClientsCount;
-    private ObjectOutputStream oos = null;
-    private ObjectInputStream ois = null;
+    ObjectOutputStream oos = null;
+    ObjectInputStream ois = null;
 
     public RelayClientThread(Socket clientSocket, RelayClientThread[] threads) {
         this.clientSocket = clientSocket;
@@ -47,7 +47,7 @@ public class RelayClientThread extends Thread {
                 oos.writeObject(
                         new Message(RelayServer.RELAY_NODE.getBlockChain())
                 );
-                
+
                 oos.reset();
 
                 while (true) {
@@ -87,8 +87,7 @@ public class RelayClientThread extends Thread {
                         );
 
                         // clear the transaction list
-                        RelayServer.RELAY_NODE.getTransactionList().clear();
-
+                        //RelayServer.RELAY_NODE.getTransactionList().clear();
                         LOGGER.log(
                                 Level.INFO,
                                 "The list has been cleared"
@@ -103,7 +102,7 @@ public class RelayClientThread extends Thread {
                         RelayServer.masterConn.moos
                                 .writeObject(
                                         new Message(
-                                                RelayServer.RELAY_NODE.getMinedBlock()
+                                                RelayServer.RELAY_NODE.getMinedBlock(), messageFromClient.getObject2()
                                         )
                                 );
                         LOGGER.log(
@@ -111,6 +110,9 @@ public class RelayClientThread extends Thread {
                                 "The mined Block has been sent to the master node"
                         );
 
+                    } else if (StringBuilder.class.isInstance(objectInMessage)) {
+                        StringBuilder st = (StringBuilder) objectInMessage;
+                        System.out.println(st);
                     }
                 }
             } catch (ClassNotFoundException ex) {

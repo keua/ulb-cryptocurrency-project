@@ -6,11 +6,13 @@
 package com.ulb.cryptography.network;
 
 import com.ulb.cryptography.cryptocurrency.Blockchain;
+import com.ulb.cryptography.cryptocurrency.Transaction;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,7 +71,8 @@ public class RelayClient extends Thread {
             try {
                 Message messageFromClient = (Message) mois.readObject();
                 Object objectInMessage = messageFromClient.getObject();
-                if (Blockchain.class.isInstance(objectInMessage)) {
+                Object secondObjectInMessage = messageFromClient.getObject2();
+                if (secondObjectInMessage != null && Blockchain.class.isInstance(objectInMessage)) {
                     LOGGER.log(
                             Level.INFO,
                             "Getting the new blockchain from master node"
@@ -81,6 +84,39 @@ public class RelayClient extends Thread {
                             "Blocks in the new blockchain {0}",
                             newBlockchain.getListOfBlocks().size()
                     );
+                    LinkedList<Transaction> badT = (LinkedList<Transaction>) secondObjectInMessage;
+                    LinkedList<Transaction> minT = newBlockchain.getListOfBlocks().get(newBlockchain.getListOfBlocks().size() - 1).getListOfTransactions();
+                    int numberTransToDelete = minT.size() + badT.size() - 1;// -1 because the rewarded trans
+                    for (int i = 0; i < numberTransToDelete; i++) {
+                        RelayServer.RELAY_NODE.getTransactionList().remove();
+                    }
+                    for (RelayClientThread relayClientThread : RelayServer.CLIENT_THREADS) {
+                        if (relayClientThread != null) {
+                            relayClientThread.oos.writeObject(
+                                    new Message(newBlockchain)
+                            );
+                        }
+                    }
+                    moos.reset();
+                } else if (Blockchain.class.isInstance(objectInMessage)) {
+                    LOGGER.log(
+                            Level.INFO,
+                            "Getting the new blockchain from master node"
+                    );
+                    Blockchain newBlockchain = (Blockchain) objectInMessage;
+                    RelayServer.RELAY_NODE.setBlockChain(newBlockchain);
+                    LOGGER.log(
+                            Level.INFO,
+                            "Blocks in the new blockchain {0}",
+                            newBlockchain.getListOfBlocks().size()
+                    );
+                    for (RelayClientThread relayClientThread : RelayServer.CLIENT_THREADS) {
+                        if (relayClientThread != null) {
+                            relayClientThread.oos.writeObject(
+                                    new Message(newBlockchain)
+                            );
+                        }
+                    }
                     moos.reset();
                 }
             } catch (IOException | ClassNotFoundException ex) {

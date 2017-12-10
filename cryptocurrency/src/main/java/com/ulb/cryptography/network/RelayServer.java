@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,7 +26,7 @@ public class RelayServer {
     private static ServerSocket serverSocket = null;
     private static Socket clientSocket = null;
     private static final int MAX_CLIENTS = 10;
-    private static final RelayClientThread[] CLIENT_THREADS = new RelayClientThread[MAX_CLIENTS];
+    static final RelayClientThread[] CLIENT_THREADS = new RelayClientThread[MAX_CLIENTS];
     static RelayNode RELAY_NODE;
     private static final int DEFAULT_PORT_NUMBER = 2222;
     // to be a master client
@@ -34,6 +35,8 @@ public class RelayServer {
     static int masterPort;
     static String masterHost;
     static RelayClient masterConn = null;
+    // to be a Relay Client
+    static int relayServerPort;
 
     public static void main(String args[]) throws ClassNotFoundException {
 
@@ -49,6 +52,7 @@ public class RelayServer {
             portNumber = Integer.parseInt(args[0]);
             RelayServer.masterPort = Integer.parseInt(args[1]);
             RelayServer.masterHost = args[2];
+            relayServerPort = Integer.parseInt(args[3]);
             LOGGER.log(Level.INFO, "Now using port number={0}", portNumber);
         }
 

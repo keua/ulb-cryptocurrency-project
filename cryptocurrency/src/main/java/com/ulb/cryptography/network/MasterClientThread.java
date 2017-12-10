@@ -6,7 +6,6 @@
 package com.ulb.cryptography.network;
 
 import com.ulb.cryptography.cryptocurrency.Block;
-import com.ulb.cryptography.cryptocurrency.Blockchain;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -25,8 +24,8 @@ public class MasterClientThread extends Thread {
     private Socket clientSocket = null;
     private final MasterClientThread[] threads;
     private final int maxClientsCount;
-    private ObjectOutputStream oos = null;
-    private ObjectInputStream ois = null;
+    ObjectOutputStream oos = null;
+    ObjectInputStream ois = null;
 
     public MasterClientThread(Socket clientSocket, MasterClientThread[] threads) {
         this.clientSocket = clientSocket;
@@ -66,32 +65,41 @@ public class MasterClientThread extends Thread {
                         );
                         // Verify if the block is valid (Below)
                         Block block = (Block) objectInMessage;
-                        MasterNodeServer.MASTER_NODE.addBlockToChain(block);
-                        LOGGER.log(
-                                Level.INFO,
-                                "New Block added to the blockchain,"
-                                + " blocks in the blockchain: {0}",
-                                MasterNodeServer.MASTER_NODE
-                                        .getBlockChain()
-                                        .getListOfBlocks()
-                                        .size()
-                        );
+
+                        MasterNodeServer.messageQueue.add(messageFromClient);
+
+//                        if (MasterNodeServer.MASTER_NODE.checkBlock(block)) {
+//                            MasterNodeServer.MASTER_NODE.addBlockToChain(block);
+//                            for (MasterClientThread thread : threads) {
+//                                if (thread != null) {
+//                                    LOGGER.log(
+//                                            Level.INFO,
+//                                            "Sending the updated blockchain to the relays"
+//                                    );
+//                                    thread.oos.writeObject(
+//                                            new Message(
+//                                                    MasterNodeServer.MASTER_NODE
+//                                                            .getBlockChain(),
+//                                                    messageFromClient.getObject2()
+//                                            )
+//                                    );
+//                                    thread.oos.reset();// the most important line in the project
+//                                }
+//                            }
+//                            LOGGER.log(
+//                                    Level.INFO,
+//                                    "New Block added to the blockchain,"
+//                                    + " blocks in the blockchain: {0}",
+//                                    MasterNodeServer.MASTER_NODE
+//                                            .getBlockChain()
+//                                            .getListOfBlocks()
+//                                            .size()
+//                            );
+//                        } else {
+//                            // send a reject message
+//                        }
                         // Verify if the block is valid (Above)
-                        for (MasterClientThread thread : threads) {
-                            if (thread != null) {
-                                LOGGER.log(
-                                        Level.INFO,
-                                        "Sending the updated blockchain to the relays"
-                                );
-                                thread.oos.writeObject(
-                                        new Message(
-                                                MasterNodeServer.MASTER_NODE
-                                                        .getBlockChain()
-                                        )
-                                );
-                                thread.oos.reset();// the most important line in the project
-                            }
-                        }
+
                         /*LOGGER.log(
                                 Level.INFO,
                                 "Sending the updated blockchain to the relays"
@@ -111,6 +119,8 @@ public class MasterClientThread extends Thread {
                 LOGGER.log(Level.SEVERE, "Class not found Exception", ex);
             } catch (EOFException ex) {
                 LOGGER.log(Level.INFO, "Client finishes connection", ex);
+                //} catch (FileNotFoundException | GeneralSecurityException ex) {
+                //Logger.getLogger(MasterClientThread.class.getName()).log(Level.SEVERE, null, ex);
             }
             ois.close();
             oos.close();

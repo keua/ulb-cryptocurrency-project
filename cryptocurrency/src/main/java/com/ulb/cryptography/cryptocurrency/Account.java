@@ -81,6 +81,9 @@ public class Account {
             output.append("\r\n" + this.hashPassword + "\r\n");
         }
         this.AcountID = id;
+
+        this.savePublicInfo();
+
     }
 
     /**
@@ -201,26 +204,6 @@ public class Account {
         }
     }
 
-    public static void main(String[] args) throws GeneralSecurityException, IOException {
-        //this will create a new account and the pasword to pass.txt file
-        //it also create a file named as the id of the account that contains the
-        // account encrypted private key and public key
-        Account b = new Account("1234");
-        // so we have to enter the account num 'we can get from the fie created'
-        // and then enter the password to decrypt the private key and get the public key        
-        Account a = new Account();
-        System.out.println("Enter Account Num:");
-        Scanner scanner = new Scanner(System.in);
-        String Acc = scanner.nextLine();
-        System.out.println("Enter Password:");
-        String pass = scanner.nextLine();
-        if (a.checkpass(Acc, pass)) {
-            System.out.println(savePrivateKey(a.getPrivateKey(Acc, pass)));
-            a.getPublicKey(Acc);
-        }
-        //Then we gotta bring the stuff in this account using public key
-    }
-
     /**
      * @return the AcountID
      */
@@ -239,6 +222,20 @@ public class Account {
         String decrypted = Cryptography.AESdecrypt(this.aesKey, this.iv, this.encryptedPrivateKey);
         PrivateKey privateKey = Cryptography.loadPrivateKey(decrypted);
         return privateKey;
+    }
+
+    private void savePublicInfo() throws FileNotFoundException, GeneralSecurityException {
+        /*File file =  new File("public_repo");
+        try (PrintWriter out = new PrintWriter(file)) {
+            out.("address=" + this.strAddress + "\r\n" + savePublicKey(this.publiKey));
+        }*/
+        try (FileWriter fw = new FileWriter("public_repo", true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                PrintWriter out = new PrintWriter(bw)) {
+            out.println("address=" + this.strAddress + "\r\n" + savePublicKey(this.publiKey));
+        } catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
     }
 
 }
