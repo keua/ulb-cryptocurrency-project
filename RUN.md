@@ -1,40 +1,32 @@
-#old
-
-## Relay node
-mvn 
--Dexec.args="-classpath %classpath com.ulb.cryptography.network.RelayServer" 
--Dexec.executable="java" 
--Dexec.classpathScope=runtime 
--Dmaven.ext.class.path=/mnt/c/Program\ Files/NetBeans\ 8.2/java/maven-nblib/netbeans-eventspy.jar
--Dfile.encoding=UTF-8 org.codehaus.mojo:exec-maven-plugin:1.2.1:exec 
-
-mvn -Dexec.args="-classpath %classpath com.ulb.cryptography.network.RelayServer 2145 3333 localhost" -Dexec.executable="java" -Dexec.classpathScope=runtime -Dmaven.ext.class.path=/mnt/c/Program\ Files/NetBeans\ 8.2/java/maven-nblib/netbeans-eventspy.jar -Dfile.encoding=UTF-8 org.codehaus.mojo:exec-maven-plugin:1.2.1:exec 
-
 ## Maser node
-mvn 
--Dexec.args="-classpath %classpath com.ulb.cryptography.network.MasterNodeServer" 
--Dexec.executable="java" 
--Dexec.classpathScope=runtime 
--Dmaven.ext.class.path=/mnt/c/Program\ Files/NetBeans\ 8.2/java/maven-nblib/netbeans-eventspy.jar
--Dfile.encoding=UTF-8 org.codehaus.mojo:exec-maven-plugin:1.2.1:exec 
 
-mvn -Dexec.args="-classpath %classpath com.ulb.cryptography.network.MasterNodeServer" -Dexec.executable="java" -Dexec.classpathScope=runtime -Dmaven.ext.class.path=/mnt/c/Program\ Files/NetBeans\ 8.2/java/maven-nblib/netbeans-eventspy.jar -Dfile.encoding=UTF-8 org.codehaus.mojo:exec-maven-plugin:1.2.1:exec 
+java -jar master-node.jar [listening-port] [host]  
+`java -jar master-node.jar 3333 localhost`
 
+## Relay 1
+java -jar relay-node.jar [host] [listening-port] [master-port]  
+`java -jar relay-node.jar localhost 2222 3333`
 
-## Wallet
-mvn -Dexec.args="-classpath %classpath com.ulb.cryptography.network.WalletClient localhost 2145" -Dexec.executable="java" -Dexec.classpathScope=runtime -Dmaven.ext.class.path=/mnt/c/Program\ Files/NetBeans\ 8.2/java/maven-nblib/netbeans-eventspy.jar -Dfile.encoding=UTF-8 org.codehaus.mojo:exec-maven-plugin:1.2.1:exec 
+## Relay 2
+java -jar relay-node.jar [host] [listening-port] [master-port]  
+`java -jar relay-node.jar localhost 2223 3333`
 
-## Miner
+## Miner 1
 
-mvn -Dexec.args="-classpath %classpath com.ulb.cryptography.network.MinerClient localhost 2145" -Dexec.executable="java" -Dexec.classpathScope=runtime -Dmaven.ext.class.path=/mnt/c/Program\ Files/NetBeans\ 8.2/java/maven-nblib/netbeans-eventspy.jar -Dfile.encoding=UTF-8 org.codehaus.mojo:exec-maven-plugin:1.2.1:exec 
+java -jar miner.jar [host] [relay1-port] [relay2-port]  
+`java -jar miner.jar localhost 2222 2223`
 
-# new
+## Miner 2
 
-## Maser node
-mvn 
--Dexec.args="-classpath %classpath com.ulb.cryptography.network.MasterNodeServer" 
--Dexec.executable="java" 
--Dexec.classpathScope=runtime 
--Dfile.encoding=UTF-8 org.codehaus.mojo:exec-maven-plugin:1.2.1:exec 
+java -jar miner.jar [host] [relay1-port] [relay2-port]  
+`java -jar miner.jar localhost 2223 2222`
 
-mvn -Dexec.args="-classpath %classpath com.ulb.cryptography.network.MasterNodeServer" -Dexec.executable="java" -Dexec.classpathScope=runtime -Dfile.encoding=UTF-8 org.codehaus.mojo:exec-maven-plugin:1.2.1:exec 
+## Wallet 1
+
+java -jar wallet.jar [host] [relay1-port] [relay2-port]  
+`java -jar wallet.jar localhost 2222 2223`
+
+## Wallet 2
+
+java -jar wallet.jar [host] [relay1-port] [relay2-port]  
+`java -jar wallet.jar localhost 2223 2222`
