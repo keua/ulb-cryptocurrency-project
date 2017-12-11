@@ -166,6 +166,7 @@ public class Miner {
             RandomString gen = new RandomString(8, ThreadLocalRandom.current());
             block.setStrNonce(gen.toString());
             hash = block.calcBlockHash();
+            block.setStrHash(hash);
             System.out.println(hash);
             System.out.println(hash.substring(0, difficulty));
         } while (!hash.substring(0, difficulty).equals(diff));

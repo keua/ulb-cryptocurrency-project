@@ -58,6 +58,19 @@ public class Blockchain implements Serializable {
 
     public Float getLastTransactionBySenderAddress(String address) {
 
+        /*Float totalInputAmount = 0f;
+        Float totalOutputAmount = 0f;
+
+        for (Block block : listOfBlocks) {
+            for (Transaction transaction : block.getListOfTransactions()) {
+                if (transaction.getStrSenderAddress().equals(address)) {
+                    totalInputAmount += transaction.getFltInputSenderAmount();
+                }
+                if (transaction.getStrReceiver().equals(address) && transaction.getTranType().equals("reward")) {
+
+                }
+            }
+        }*/
         Transaction lastSenderTrans = null;
         Block lastBlock = null;
         Float lastAmount = 0f;
@@ -108,8 +121,17 @@ public class Blockchain implements Serializable {
                 }
 
             }
+        } else {
+            for (int i = 0; i < temp.size(); i++) {
+                Block b = temp.get(i);
+                for (int j = 0; j < b.getListOfTransactions().size(); j++) {
+                    Transaction t = b.getListOfTransactions().get(j);
+                    if (t.getStrReceiver().equals(address)) {
+                        lastAmount += t.getFltOutputReceiverAmount();
+                    }
+                }
+            }
         }
-
         return lastAmount;
     }
 }

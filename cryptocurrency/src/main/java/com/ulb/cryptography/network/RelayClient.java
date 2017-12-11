@@ -96,6 +96,7 @@ public class RelayClient extends Thread {
                             relayClientThread.oos.writeObject(
                                     new Message(newBlockchain)
                             );
+                            //relayClientThread.oos.reset();
                         }
                     }
                     moos.reset();

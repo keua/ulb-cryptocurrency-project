@@ -20,14 +20,14 @@ import java.util.logging.Logger;
  * @author masterulb
  */
 public class RelayClientThread extends Thread {
-
+    
     private static final Logger LOGGER = Logger.getLogger(RelayClientThread.class.getName());
     private Socket clientSocket = null;
     private final RelayClientThread[] threads;
     private final int maxClientsCount;
     ObjectOutputStream oos = null;
     ObjectInputStream ois = null;
-
+    
     public RelayClientThread(Socket clientSocket, RelayClientThread[] threads) throws IOException {
         this.clientSocket = clientSocket;
         this.threads = threads;
@@ -35,29 +35,29 @@ public class RelayClientThread extends Thread {
         ois = new ObjectInputStream(clientSocket.getInputStream());
         oos = new ObjectOutputStream(clientSocket.getOutputStream());
     }
-
+    
     @Override
     public void run() {
         try {
-
+            
             try {
 
                 //ois = new ObjectInputStream(clientSocket.getInputStream());
                 //oos = new ObjectOutputStream(clientSocket.getOutputStream());
                 System.out.println("New client is connected in this server");
-
+                
                 oos.writeObject(
                         new Message(RelayServer.RELAY_NODE.getBlockChain())
                 );
-
+                
                 oos.reset();
-
+                
                 while (true) {
-
+                    
                     System.out.println("Im listening for wallets and miners");
                     Message messageFromClient = (Message) ois.readObject();
                     Object objectInMessage = messageFromClient.getObject();
-
+                    
                     if (Transaction.class.isInstance(objectInMessage)) { // from wallet
 
                         Transaction t = (Transaction) objectInMessage;
@@ -65,7 +65,7 @@ public class RelayClientThread extends Thread {
                         LOGGER.log(
                                 Level.INFO, "New transaction added to the list"
                         );
-
+                        
                     } else if (RequestForTransactions.class.isInstance(objectInMessage)) { // from miner
 
                         LOGGER.log(
@@ -74,15 +74,16 @@ public class RelayClientThread extends Thread {
                         );
                         RequestForTransactions rft
                                 = (RequestForTransactions) objectInMessage;
-
+                        
                         oos.writeObject(
                                 new Message(
                                         (LinkedList<Transaction>) RelayServer.RELAY_NODE
                                                 .getTransactionList()
-                                                .clone()
+                                                .clone(),
+                                        RelayServer.RELAY_NODE.getBlockChain()
                                 )
                         );
-
+                        
                         LOGGER.log(
                                 Level.INFO,
                                 "The List has been sent to the miner"
@@ -94,40 +95,46 @@ public class RelayClientThread extends Thread {
                                 Level.INFO,
                                 "The list has been cleared"
                         );
-
+                        
                     } else if (Block.class.isInstance(objectInMessage)) {
-
+                        
                         LOGGER.log(Level.INFO, "A mined Block has been received");
-
+                        
                         Block block = (Block) objectInMessage;
-                        RelayServer.RELAY_NODE.setMinedBlock(block);
+                        LOGGER.info(block.getStrHash());
                         RelayServer.masterConn.moos
                                 .writeObject(
                                         new Message(
-                                                RelayServer.RELAY_NODE.getMinedBlock(), messageFromClient.getObject2()
+                                                block, messageFromClient.getObject2()
                                         )
                                 );
                         LOGGER.log(
                                 Level.INFO,
                                 "The mined Block has been sent to the master node"
                         );
-
+                        
                     } else if (StringBuilder.class.isInstance(objectInMessage)) {
                         StringBuilder st = (StringBuilder) objectInMessage;
                         System.out.println(st);
+                    } else if (String.class.isInstance(objectInMessage)) {
+                        String req = (String) objectInMessage;
+                        if ("blockchain".equals(req)) {
+                            oos.writeObject(new Message(RelayServer.RELAY_NODE.getBlockChain()));
+                            //oos.reset();
+                        }
                     }
                 }
             } catch (ClassNotFoundException ex) {
                 LOGGER.log(Level.SEVERE, "Class Exception", ex);
             }
-
+            
             ois.close();
             oos.close();
             clientSocket.close();
-
+            
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "IO exception, run thread method", ex);
         }
     }
-
+    
 }

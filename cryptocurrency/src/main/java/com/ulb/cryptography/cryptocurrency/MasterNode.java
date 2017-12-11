@@ -103,9 +103,14 @@ public class MasterNode {
     }
 
     public boolean checkBlock(Block newBlock) throws IOException, FileNotFoundException, GeneralSecurityException {
-        String newHash = newBlock.calcBlockHash();
 
-        System.out.println("masternode new Hash " + newHash);
+      //  String newHash = newBlock.calcBlockHash();
+        String diff = new String(new char[DIFFICULTY]).replace('\0', '0');
+        System.out.println(newBlock.getStrHash());
+        if (!newBlock.getStrHash().substring(0, 5).equals(diff)) {
+            return false;
+        }
+      //  System.out.println("masternode new Hash " + newHash);
         System.out.println("miner new hash " + newBlock.getStrHash());
         //System.out.println("last block hash " + lastBlock.getStrHash());
         System.out.println("new block previous hash " + newBlock.getprevHash());
@@ -118,9 +123,9 @@ public class MasterNode {
 
         if (newBlock.getBlockID() == 0) {// this is the first block
 
-            if (!newHash.equals(newBlock.getStrHash())) {
-                return false;
-            }
+        //    if (!newHash.equals(newBlock.getStrHash())) {
+        //        return false;
+         //   }
             return true;
         } else {
             Block lastBlock = this.blockChain.getListOfBlocks().get(this.blockChain.getListOfBlocks().size() - 1);
@@ -131,10 +136,10 @@ public class MasterNode {
             } else //verify previous block hash
             if (!lastBlock.getStrHash().equals(newBlock.getprevHash())) {
                 return false;
-            } else //verify this node hash
-            if (!newHash.equals(newBlock.getStrHash())) {
-                return false;
-            }
+            } //else //verify this node hash
+            //if (!newHash.equals(newBlock.getStrHash())) {
+                //return false;
+            //}
 
             LinkedList<Transaction> tmp = new LinkedList<>();
 
@@ -155,6 +160,7 @@ public class MasterNode {
         }
 
     }
+    private static final int DIFFICULTY = 5;
 
     public PublicKey getPublicKeyFromAddress(String address) throws FileNotFoundException, IOException, GeneralSecurityException {
         String publicKey = null;
@@ -272,7 +278,7 @@ public class MasterNode {
         if (!validTransactions.isEmpty() && rewardedTransaction.getFltOutputSenderAmount() != null) {
             System.out.println("the valid amount is " + validTransactions.size() * 1.5f);
             System.out.println("the rewarded amount is " + rewardedTransaction.getFltOutputSenderAmount());
-            if (rewardedTransaction.getFltOutputSenderAmount() == validTransactions.size() * 1.5f) {
+            if (rewardedTransaction.getFltOutputReceiverAmount() == validTransactions.size() * 1.5f) {
                 validTransactions.add(rewardedTransaction);
             } else {
                 this.notValidTransactions.add(rewardedTransaction);

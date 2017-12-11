@@ -27,7 +27,7 @@ public class RelayServer {
     private static final int MAX_CLIENTS = 10;
     static final RelayClientThread[] CLIENT_THREADS = new RelayClientThread[MAX_CLIENTS];
     static RelayNode RELAY_NODE;
-    private static final int DEFAULT_PORT_NUMBER = 2222;
+    private static final int DEFAULT_PORT_NUMBER = 2223;
     // to be a master client
     private static final int DEFAULT_MASTER_PORT_NUMBER = 3333;
     private static final String DEFAULT_HOST = "localhost";

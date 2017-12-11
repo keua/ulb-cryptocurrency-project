@@ -28,21 +28,22 @@ import java.util.logging.Logger;
  * @author masterulb
  */
 public class MinerClient implements Runnable {
-
+    
     private static final Logger LOGGER = Logger.getLogger(MinerClient.class.getName());
     private static Socket[] clientSocket = null;
     private static ObjectOutputStream[] oosarray = null;
     private static ObjectInputStream[] oisarray = null;
-    private static final int[] DEFAULT_RELAY_PORT_NUMBER = {2222, 2223};
+    private static final int[] DEFAULT_RELAY_PORT_NUMBER = {2223, 2222};
     private static boolean closed = false;
     static Miner MINER;
     private static Socket MINER_SOCKET;
     private static ObjectOutputStream MINER_OOS;
     private static ObjectInputStream MINER_OIS;
     static Account activeAccount;
-
+    private static final int DIFFICULTY = 5;
+    
     public static void main(String[] args) throws GeneralSecurityException, NoSuchAlgorithmException, IOException, ClassNotFoundException {
-
+        
         MINER = new Miner();
         activeAccount = MINER.getWallet().getAccounts().get(0);
         clientSocket = new Socket[2];
@@ -54,7 +55,7 @@ public class MinerClient implements Runnable {
         );
         int[] portNumber = DEFAULT_RELAY_PORT_NUMBER;
         String host = "localhost";
-
+        
         if (args.length < 2) {
             LOGGER.log(
                     Level.SEVERE,
@@ -71,7 +72,7 @@ public class MinerClient implements Runnable {
          * Open a socket on a given host and port. Open input and output streams.
          */
         try {
-
+            
             for (int i = 0; i < portNumber.length; i++) {
                 clientSocket[i] = new Socket(host, portNumber[i]);
                 oosarray[i] = new ObjectOutputStream(clientSocket[i].getOutputStream());
@@ -80,11 +81,11 @@ public class MinerClient implements Runnable {
             MINER_SOCKET = clientSocket[0];
             MINER_OOS = oosarray[0];
             MINER_OIS = oisarray[0];
-
+            
         } catch (UnknownHostException e) {
-
+            
             LOGGER.log(Level.SEVERE, "Don't know about host {0}", host);
-
+            
         } catch (IOException e) {
             LOGGER.log(
                     Level.SEVERE,
@@ -103,9 +104,9 @@ public class MinerClient implements Runnable {
                 while (!closed) {//!closed
 
                     receiveAnswer();
-
+                    
                     requestTransactions();
-
+                    
                 }
                 /*
                  * Close the output stream, close the input streamMINER_OOS socket.
@@ -117,9 +118,9 @@ public class MinerClient implements Runnable {
                 LOGGER.log(Level.SEVERE, "IOException:  {0}", e);
             }
         }
-
+        
     }
-
+    
     private static void requestTransactions() throws IOException, GeneralSecurityException, ClassNotFoundException {
         Scanner scanner = new Scanner(System.in);
         int select = -1; //opción 
@@ -131,6 +132,8 @@ public class MinerClient implements Runnable {
                     "Options:\n"
                     + "1.- Request transactions \n"
                     + "2.- Login \n"
+                    + "3.- request blockchain \n"
+                    + "4.- request balance \n"
                     + "0.- Exit"
             );
             select = Integer.parseInt(scanner.nextLine());
@@ -138,7 +141,7 @@ public class MinerClient implements Runnable {
             switch (select) {
                 case 1:
                     LOGGER.log(Level.INFO, "Requesting transactions");
-
+                    
                     RequestForTransactions rft = new RequestForTransactions();
                     rft.setAddress(
                             MINER
@@ -148,12 +151,22 @@ public class MinerClient implements Runnable {
                                     .getStrAddress()
                     );
                     MINER_OOS.writeObject(new Message(rft));
-
+                    
                     messageFromClient = (Message) MINER_OIS.readObject();
                     objectInMessage = messageFromClient.getObject();
+                    Object object2 = messageFromClient.getObject2();
+                    
+                    while (Blockchain.class.isInstance(objectInMessage)) { /// very very important
+                        messageFromClient = (Message) MINER_OIS.readObject();
+                        objectInMessage = messageFromClient.getObject();
+                        object2 = messageFromClient.getObject2();
+                    }
+                    
+                    MINER.setBlockchain((Blockchain) object2);
 
                     // Process the transaction list (mining stuff here)
                     LOGGER.log(Level.INFO, "Processing the transactions");
+                    
                     LinkedList<Transaction> transactions
                             = (LinkedList<Transaction>) objectInMessage;
                     //if we are mining the first block in the blockchain we dont need to do the validations
@@ -173,7 +186,7 @@ public class MinerClient implements Runnable {
                         minerTransaction.signTransaction(activeAccount.getPrivateKey());
                         transactions.add(minerTransaction);
                         Block block = MINER.CreateNewBlock(transactions);
-                        minedBlock = MINER.ProveOfWork(block, 4);
+                        minedBlock = MINER.ProveOfWork(block, DIFFICULTY);
                         LOGGER.log(Level.INFO, "Done Mining!");
                     } else {
                         // validate the receiver address
@@ -189,8 +202,8 @@ public class MinerClient implements Runnable {
                         Transaction minerTransaction
                                 = new Transaction(
                                         total,
-                                        0f,
                                         cleanTransactions.size() * 1.5f,
+                                        cleanTransactions.size() * 1.5f + total,
                                         minerAddress,
                                         minerAddress,
                                         new Date()
@@ -203,7 +216,8 @@ public class MinerClient implements Runnable {
                         // Here I'm only mining this for testing
                         //we must be mining the new created block
                         block.calcBlockHash();
-                        minedBlock = MINER.ProveOfWork(block, 4);
+                        minedBlock = MINER.ProveOfWork(block, DIFFICULTY);
+                        
                         LOGGER.log(Level.INFO, "Done Mining!");
                     }
 
@@ -214,17 +228,17 @@ public class MinerClient implements Runnable {
                     break;
                 case 2:
                     System.out.println("Login\n");
-
+                    
                     System.out.println("User:");
                     String entradaTeclado = "2";
                     entradaTeclado = entradaEscaner.nextLine();
-
+                    
                     System.out.println("password:");
                     String entradaTeclado2 = "";
                     entradaTeclado2 = entradaEscaner.nextLine();
-
+                    
                     Account activeAccount2 = MINER.getWallet().login(entradaTeclado, entradaTeclado2);
-
+                    
                     if (activeAccount2 != null) {
                         Boolean account = true;
                         while (account) {
@@ -234,9 +248,9 @@ public class MinerClient implements Runnable {
                                     + "2.- Blance \n"
                                     + "0.- Logout"
                             );
-
+                            
                             int select2 = Integer.parseInt(scanner.nextLine());
-
+                            
                             switch (select2) {
                                 case 1:
                                     System.out.println("Addressee to transfer");
@@ -245,7 +259,7 @@ public class MinerClient implements Runnable {
                                     System.out.println("Quantity");
                                     String entradaTeclado4 = "";
                                     entradaTeclado4 = entradaEscaner.nextLine();
-
+                                    
                                     String addressToSend = entradaTeclado3;
                                     String addressFromSend = activeAccount2.getStrAddress();
                                     Float totalsend
@@ -254,11 +268,16 @@ public class MinerClient implements Runnable {
                                                             addressFromSend
                                                     );
                                     Float toSend = Float.parseFloat(entradaTeclado4);
+                                    Float senderOutputamount = totalsend - toSend;
+                                    if (senderOutputamount < 0) {
+                                        System.out.println("you dont have enough coins");
+                                        break;
+                                    }
                                     // creating the transaction
                                     Transaction t = new Transaction(
                                             totalsend,
                                             toSend,
-                                            totalsend - toSend,
+                                            senderOutputamount,
                                             addressFromSend,
                                             addressToSend,
                                             new Date()
@@ -266,7 +285,7 @@ public class MinerClient implements Runnable {
                                     t.setTranType("normal");
                                     // sign the transaction before send to the relay
                                     t.signTransaction(activeAccount2.getPrivateKey());
-
+                                    
                                     System.out.println(t.getFltInputSenderAmount()); // 10000000
                                     System.out.println(t.getFltOutputReceiverAmount());//100
                                     System.out.println(t.getFltOutputSenderAmount());//1000000-100
@@ -274,9 +293,9 @@ public class MinerClient implements Runnable {
                                     for (ObjectOutputStream oos : oosarray) {
                                         oos.writeObject(new Message(t));// send the transaction to the relay server
                                     }
-
+                                    
                                     receiveAnswer();
-
+                                    
                                     System.out.println("Successful transaction");
                                     break;
                                 case 2:
@@ -296,13 +315,19 @@ public class MinerClient implements Runnable {
                         men = 1;
                     }
                     break;
+                case 3:
+                    //String req = "blockchain";
+                    //MINER_OOS.writeObject(new Message(req));
+                    //receiveAnswer();
+                    men = 1;
+                    break;
                 case 0:
                     for (ObjectOutputStream oos : oosarray) {
-
+                        
                         oos.close();
                     }
                     for (ObjectInputStream ois : oisarray) {
-
+                        
                         ois.close();
                     }
                     for (Socket socket : clientSocket) {
@@ -313,16 +338,17 @@ public class MinerClient implements Runnable {
                 default:
                     System.out.println("Option not recognized");
                     break;
-
+                
             }
         }
     }
-
+    
     private static void receiveAnswer() {
         try {
             // reading the relay answer
             Message messageFromClient = (Message) MINER_OIS.readObject();
             Object objectInMessage = messageFromClient.getObject();
+            
             if (Blockchain.class.isInstance(objectInMessage)) {
                 LOGGER.log(Level.INFO, "Getting the new blockchain");
                 Blockchain newBlockchain = (Blockchain) objectInMessage;
@@ -332,6 +358,9 @@ public class MinerClient implements Runnable {
                         "Blocks in the new blockchain {0}",
                         MINER.getBlockchain().getListOfBlocks().size()
                 );
+                //MINER_OOS.reset();
+                //messageFromClient = (Message) MINER_OIS.readObject();
+                //objectInMessage = messageFromClient.getObject();
             }
         } catch (IOException | ClassNotFoundException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -345,6 +374,6 @@ public class MinerClient implements Runnable {
      */
     @Override
     public void run() {
-
+        
     }
 }

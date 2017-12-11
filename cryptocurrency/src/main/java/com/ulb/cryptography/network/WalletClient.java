@@ -93,19 +93,7 @@ public class WalletClient implements Runnable {
                 new Thread(new WalletClient()).start();
                 while (!closed) {
 
-                    Message messageFromClient = (Message) oisarray[0].readObject();
-                    Object objectInMessage = messageFromClient.getObject();
-                    LOGGER.log(Level.INFO, "Im here waiting messages from the relay");
-                    if (Blockchain.class.isInstance(objectInMessage)) {
-                        System.out.println("Getting the new blockchain");
-                        Blockchain newBlockchain = (Blockchain) objectInMessage;
-                        WALLET.setBlockchain(newBlockchain);
-                        LOGGER.log(
-                                Level.INFO,
-                                "Blocks in the new blockchain {0}",
-                                newBlockchain.getListOfBlocks().size()
-                        );
-                    }
+                    receiveMessage();
 
                     for (ObjectOutputStream oos : oosarray) {
                         oos.writeObject(new Message(new StringBuilder("hi everyone")));
@@ -127,6 +115,24 @@ public class WalletClient implements Runnable {
             }
         }
 
+    }
+
+    private static void receiveMessage() throws IOException, ClassNotFoundException {
+        Message messageFromClient = (Message) oisarray[0].readObject();
+        Object objectInMessage = messageFromClient.getObject();
+        LOGGER.log(Level.INFO, "Im here waiting messages from the relay");
+        if (Blockchain.class.isInstance(objectInMessage)) {
+            System.out.println("Getting the new blockchain");
+            Blockchain newBlockchain = (Blockchain) objectInMessage;
+            WALLET.setBlockchain(newBlockchain);
+            LOGGER.log(
+                    Level.INFO,
+                    "Blocks in the new blockchain {0}",
+                    newBlockchain.getListOfBlocks().size()
+            );
+            //messageFromClient = (Message) oisarray[0].readObject();
+            //objectInMessage = messageFromClient.getObject();
+        }
     }
 
     /**
@@ -155,7 +161,7 @@ public class WalletClient implements Runnable {
                         "Options:\n"
                         + "1.- Create new addresses \n"
                         + "2.- Login \n"
-                        + "3.- Full copy of teh blockchain \n"
+                        + "3.- Full copy of the blockchain \n"
                         + "0.- Exit"
                 );
 
@@ -199,6 +205,11 @@ public class WalletClient implements Runnable {
 
                                 switch (select2) {
                                     case 1:
+
+                                        String req = "blockchain";
+                                        oosarray[0].writeObject(new Message(req));
+                                        receiveMessage();
+
                                         System.out.println("Addressee to transfer");
                                         String entradaTeclado3 = "";
                                         entradaTeclado3 = entradaEscaner.nextLine();
@@ -214,11 +225,16 @@ public class WalletClient implements Runnable {
                                                                 addressFromSend
                                                         );
                                         Float toSend = Float.parseFloat(entradaTeclado4);
+                                        Float senderOutputamount = total - toSend;
+                                        if (senderOutputamount < 0) {
+                                            System.out.println("you dont have enough coins");
+                                            break;
+                                        }
                                         // creating the transaction
                                         Transaction t = new Transaction(
                                                 total,
                                                 toSend,
-                                                total - toSend,
+                                                senderOutputamount,
                                                 addressFromSend,
                                                 addressToSend,
                                                 new Date()
@@ -234,6 +250,8 @@ public class WalletClient implements Runnable {
                                         for (ObjectOutputStream oos : oosarray) {
                                             oos.writeObject(new Message(t));// send the transaction to the relay server
                                         }
+
+                                        receiveMessage();
 
                                         System.out.println("Successful transaction");
                                         break;
@@ -255,6 +273,9 @@ public class WalletClient implements Runnable {
                         }
                         break;
                     case 3:
+                        String req = "blockchain";
+                        oosarray[0].writeObject(new Message(req));
+                        receiveMessage();
                         men = 1;
                         break;
 
@@ -273,6 +294,8 @@ public class WalletClient implements Runnable {
                 LOGGER.log(Level.SEVERE, "Uoop! Error!", e);
             } catch (GeneralSecurityException | IOException ex) {
                 LOGGER.log(Level.SEVERE, "Ge", ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(WalletClient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         closed = true;
