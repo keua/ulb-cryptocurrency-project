@@ -1,0 +1,62 @@
+To test the full functionality these scenario is recommended:
+
+0.  Go to Documents/Demo/ -> cd Documents/Demo
+
+1.	Run Master Node -> java -jar master-node.jar 3333
+
+2.	Run Relay Node RN1     2222 -> java -jar relay-node.jar localhost 2222 3333
+
+3.	Run Relay Node RN2     2223 -> java -jar relay-node.jar localhost 2223 3333
+
+4.	Run Miner M1   2222,2223 -> java -jar miner.jar localhost 2222 2223
+    
+    - MINER1 ADDRESS: 243e9d70f95dca310798428ac3bf9b86aba04126
+    - MINER1 ID: 26
+    - MINER1 PASS: miner
+
+5.	Request Trans  -> First Block Created -> M1=1.5
+    - MINER1 Balance: 1.5
+
+6.	Run Wallet W1      Create Account    W1=0 -> java -jar wallet.jar localhost 2222 2223
+    - WALLET1 ADDRESS: 
+    - WALLET1 ID: 
+    - WALLET1 PASS: 123
+
+7.	Create Miner M2    M2=0 -> java -jar miner.jar localhost 2223 2222
+    - MINER2 ADDRESS: 
+    - MINER2 ID: 
+    - MINER2 PASS: miner
+
+8.	Send  (0.5) from M1 to W1 --> M1=1    W1=0.5
+
+9.	M2 Request trans -> Mine -> M2=1.5
+    - MINER2 balance: 1.5
+    - MINER1 balance: 1.0
+    - WALLET1 balance: 0.5
+
+10.	Create new Wallet W2    Create Account W2=0 -> +
+    - WALLET2 ADDRESS: 
+    - WALLET2 ID: 
+    - WALLET2 PASS: 123
+
+11.	Send (0.1) from W1 to W2 --> W1=0.4    W2=0.1 --- issue --- 
+
+12.	Send  (0.5) from M2 to W1 --> M2=1    W1=0.9
+
+13.	M1 request trans -> Mine -> rewarded with 3 coins because it mined two trans... So M1=4
+
+    - MINER1 balance: 4
+
+14.	Send (0.4) from W1 to W2 -> W1=0.5      W2=0.5 
+
+15.	Let Both Miner Do the job
+
+    - MINING AT THE SAME TIME
+
+16.	If M1 wins -> M1= 5.5   M2=1
+17.	If M2 wins -> M2=2.5   M1=4
+
+    - MINER1 balance: 4
+    - MINER2 balance: 2.5
+
+Note: To get the wallets final balance request the new block chain before requesting the balance.
